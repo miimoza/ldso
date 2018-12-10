@@ -27,21 +27,19 @@ struct ELF *loader(char *path)
     unsigned ph_offset = my_elf->ehdr->e_phoff;
     my_elf->phdr = (void *) &data_str[ph_offset];
 
-
     int i = 0;
 
     ElfW(Shdr) *section = my_elf->shdr;
-
-    while(i < my_elf->ehdr->e_shnum && !(my_elf->shdr->sh_type & PT_DYNAMIC))
+    while(i < my_elf->ehdr->e_shnum && section->sh_type != SHT_DYNAMIC)
     {
         char *c_section = (void *) section;
         unsigned offset = my_elf->ehdr->e_shentsize;
         section = (void *) &c_section[offset];
         i++;
     }
+    printf("offset:%lx\n", section->sh_offset);
     my_elf->dyn = (void *) &data_str[section->sh_offset];
     my_elf->shdr_dyn = section;
-    printf("i:%d", i);
 
     return my_elf;
 }
