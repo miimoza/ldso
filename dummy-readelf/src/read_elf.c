@@ -30,16 +30,28 @@ struct ELF *loader(char *path)
     int i = 0;
 
     ElfW(Shdr) *section = my_elf->shdr;
-    while(i < my_elf->ehdr->e_shnum && section->sh_type != SHT_DYNAMIC)
+    while(i < my_elf->ehdr->e_shnum)
     {
+        if (section->sh_type == SHT_DYNAMIC)
+        {
+            my_elf->dyn = (void *) &data_str[section->sh_offset];
+            my_elf->shdr_dyn = section;
+        }
+        if (section->sh_type == SHT_DYNSYM)
+        {
+            my_elf->dynsym = (void *) &data_str[section->sh_offset];
+            my_elf->shdr_dynsym = section;
+        }
+        if (section->sh_type == SHT_SYMTAB)
+        {
+            my_elf->symtab = (void *) &data_str[section->sh_offset];
+            my_elf->shdr_symtab = section;
+        }
         char *c_section = (void *) section;
         unsigned offset = my_elf->ehdr->e_shentsize;
         section = (void *) &c_section[offset];
         i++;
     }
-    printf("offset:%lx\n", section->sh_offset);
-    my_elf->dyn = (void *) &data_str[section->sh_offset];
-    my_elf->shdr_dyn = section;
 
     return my_elf;
 }
@@ -55,9 +67,9 @@ int main(int argc, char *argv[])
     printf("\n");
     display_program_header(my_elf);
     printf("\n");
-    display_symtabs(my_elf);
-    printf("\n");
     display_dynamic_section(my_elf);
+    printf("\n");
+    display_symtabs(my_elf);
 
 
     free(my_elf);

@@ -13,12 +13,14 @@
 
 void display_dynamic_section(struct ELF *my_elf)
 {
-    printf("Dynamic section at offset 0x1d78 contains 27 entries:\n");
+    int nb_elt_dyn = my_elf->shdr_dyn->sh_size / my_elf->shdr_dyn->sh_entsize;
+    printf("Dynamic section at offset 0x%lx contains %d entries:\n",
+        my_elf->shdr_dyn->sh_offset, nb_elt_dyn);
     printf("  Tag        Type                         Name/Value\n");
 
     ElfW(Dyn) *my_dyn = my_elf->dyn;
 
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < nb_elt_dyn; i++)
     {
         char *line = malloc(sizeof(char) * 256);
         sprintf(line + strlen(line), " 0x%016lx ", my_dyn->d_tag);
@@ -107,9 +109,7 @@ void display_dynamic_section(struct ELF *my_elf)
                 break;
         }
 
-        sprintf(line + strlen(line), "(%s)%*.s", type, 15 - (int) strlen(type), " ");
-
-
+        sprintf(line + strlen(line), "(%s)%*.s", type, 18 - (int) strlen(type), " ");
 
         sprintf(line + strlen(line), " 0x%lx", my_dyn->d_un.d_val);
 
