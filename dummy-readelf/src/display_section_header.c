@@ -24,10 +24,8 @@ void display_section_header(struct ELF *my_elf)
         sprintf(line + strlen(line), "  [%.*s%d] ", (i < 10), " ", i);
 
         char *p = (char *) my_elf->ehdr;
-
-        ElfW(Ehdr) *ehdr = (ElfW(Ehdr) *) p;
-        ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + ehdr->e_shoff);
-        ElfW(Shdr) *sh_strtab = &shdr[ehdr->e_shstrndx];
+        ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + my_elf->ehdr->e_shoff);
+        ElfW(Shdr) *sh_strtab = &shdr[my_elf->ehdr->e_shstrndx];
         const char *const sh_strtab_p = p + sh_strtab->sh_offset;
 
         sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + my_shdr->sh_name,

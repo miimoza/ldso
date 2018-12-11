@@ -201,16 +201,6 @@ void display_symtabs(struct ELF *my_elf)
                 break;
         }
 
-        char *p = (char *) my_elf->ehdr;
-
-        ElfW(Ehdr) *ehdr = (ElfW(Ehdr) *) p;
-        ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + ehdr->e_shoff);
-        ElfW(Shdr) *sh_strtab = &shdr[ehdr->e_shstrndx];
-        const char *const sh_strtab_p = p + sh_strtab->sh_offset;
-
-        sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + shdr->sh_name,
-            18 - (int) strlen(sh_strtab_p + shdr->sh_name), "");
-
 
         printf("%s\n", line);
         free(line);

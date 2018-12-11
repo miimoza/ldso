@@ -58,6 +58,9 @@ void display_dynamic_section(struct ELF *my_elf)
             case DT_RELAENT:
                 type = "RELAENT";
                 break;
+            case DT_STRSZ:
+                type = "STRSZ";
+                break;
             case DT_SYMENT:
                 type = "SYMENT";
                 break;
@@ -91,18 +94,83 @@ void display_dynamic_section(struct ELF *my_elf)
             case DT_DEBUG:
                 type = "DEBUG";
                 break;
+            case DT_TEXTREL:
+                type = "TEXTREL";
+                break;
             case DT_JMPREL:
                 type = "JMPREL";
                 break;
             case DT_BIND_NOW:
                 type = "BIND_NOW";
                 break;
+            case DT_INIT_ARRAY:
+                type = "INIT_ARRAY";
+                break;
+            case DT_FINI_ARRAY:
+                type = "FINI_ARRAY";
+                break;
+            case DT_INIT_ARRAYSZ:
+                type = "INIT_ARRAYSZ";
+                break;
+            case DT_FINI_ARRAYSZ:
+                type = "FINI_ARRAYSZ";
+                break;
             case DT_RUNPATH:
                 type = "RUNPATH";
                 break;
+            case DT_FLAGS:
+                type = "FLAGS";
+                break;
+            case DT_ENCODING:
+                type = "ENCODING";
+                break;
+            case DT_PREINIT_ARRAYSZ:
+                type = "PREINIT_ARRAYSZ";
+                break;
+            case DT_SYMTAB_SHNDX:
+                type = "SYMTAB_SHNDX";
+                break;
+            case DT_NUM:
+                type = "NUM";
+                break;
+            case DT_LOOS:
+                type = "LOOS";
+                break;
+            case DT_HIOS:
+                type = "HIOS";
+                break;
             case DT_LOPROC:
+                type = "LOPROC";
+                break;
             case DT_HIPROC:
-                type = "OC";
+                type = "HIPROC";
+                break;
+            case DT_PROCNUM:
+                type = "PROCNUM";
+                break;
+            case DT_GNU_PRELINKED:
+                type = "GNU_PRELINKED";
+                break;
+            case DT_GNU_CONFLICTSZ:
+                type = "GNU_CONFLICTSZ";
+                break;
+            case DT_GNU_LIBLISTSZ:
+                type = "GNU_PRELINKED";
+                break;
+            case DT_CHECKSUM:
+                type = "CHECKSUM";
+                break;
+            case DT_PLTPADSZ:
+                type = "PLTPADSZ";
+                break;
+            case DT_MOVEENT:
+                type = "MOVEENT";
+                break;
+            case DT_FEATURE_1:
+                type = "FEATURE_1";
+                break;
+            case DT_POSFLAG_1:
+                type = "POSFLAG_1";
                 break;
             default:
                 type = "";
