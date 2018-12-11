@@ -6,6 +6,7 @@
 #include <link.h>
 #include <elf.h>
 #include <stdlib.h>
+#include <err.h>
 #include <string.h>
 
 #include "read_elf.h"
@@ -58,8 +59,10 @@ struct ELF *loader(char *path)
 
 int main(int argc, char *argv[])
 {
-    argc = argc;
-    struct ELF *my_elf = loader(argv[0]);
+    if (argc < 2)
+        errx(1, "usage: %s <ELF>", argv[0]);
+
+    struct ELF *my_elf = loader(argv[1]);
 
     display_elf_header(my_elf);
     printf("\n");
@@ -70,7 +73,6 @@ int main(int argc, char *argv[])
     display_dynamic_section(my_elf);
     printf("\n");
     display_symtabs(my_elf);
-
 
     free(my_elf);
     return 0;

@@ -186,9 +186,30 @@ void display_symtabs(struct ELF *my_elf)
                 break;
         }
 
-        sprintf(line + strlen(line), "%s%*.s", type, 10 - (int) strlen(type), " ");
+        sprintf(line + strlen(line), "%s%*.s", type, 9 - (int) strlen(type), " ");
 
-        sprintf(line + strlen(line), " %x", my_symtab->st_shndx);
+        switch(my_symtab->st_shndx)
+        {
+            case SHN_UNDEF:
+                sprintf(line + strlen(line), "UND");
+                break;
+            case SHN_ABS:
+                sprintf(line + strlen(line), "ABS");
+                break;
+            default:
+                sprintf(line + strlen(line), "%3d", my_symtab->st_shndx);
+                break;
+        }
+
+        char *p = (char *) my_elf->ehdr;
+
+        ElfW(Ehdr) *ehdr = (ElfW(Ehdr) *) p;
+        ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + ehdr->e_shoff);
+        ElfW(Shdr) *sh_strtab = &shdr[ehdr->e_shstrndx];
+        const char *const sh_strtab_p = p + sh_strtab->sh_offset;
+
+        sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + shdr->sh_name,
+            18 - (int) strlen(sh_strtab_p + shdr->sh_name), "");
 
 
         printf("%s\n", line);

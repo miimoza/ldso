@@ -56,14 +56,14 @@ void display_elf_header(struct ELF *my_elf)
             c_display("Version:", "(0) invalid");
             break;
         case EV_CURRENT:
-            c_display("Version:", "(1) current");
+            c_display("Version:", "1 (current)");
             break;
     }
 
     switch (my_elf->ehdr->e_ident[EI_OSABI])
     {
         case ELFOSABI_SYSV || ELFOSABI_NONE:
-            c_display("OS/ABI:", "UNIX System V ABI");
+            c_display("OS/ABI:", "UNIX - System V");
             break;
         case ELFOSABI_HPUX:
             c_display("OS/ABI:", "HP-UX ABI");
