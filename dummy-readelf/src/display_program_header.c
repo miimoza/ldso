@@ -105,10 +105,8 @@ void display_program_header(struct ELF *my_elf)
         char *line = malloc(sizeof(char) * 256);
         sprintf(line + strlen(line), "   %02d     ", i);
 
-
-        char *str_elf = (void *) &my_elf;
-        void *addr_phdr = str_elf + my_phdr->p_offset;
-        void *addr_shdr = str_elf + my_shdr->sh_offset;
+        void *addr_phdr = (void *) my_phdr->p_offset;
+        void *addr_shdr = (void *) my_shdr->sh_offset;
         printf("new section\n");
         printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
         while (addr_shdr > addr_phdr && addr_shdr < addr_next_phdr)
@@ -128,7 +126,7 @@ void display_program_header(struct ELF *my_elf)
 
         char *data_str = (void *) my_phdr;
         ElfW(Phdr) *next_phdr = (void *) (data_str + (my_elf->ehdr->e_phentsize * 2));
-        addr_next_phdr = str_elf + next_phdr->p_offset;
+        addr_next_phdr = (void *) next_phdr->p_offset;
         my_phdr = (void *) (data_str + my_elf->ehdr->e_phentsize);
     }
 }
