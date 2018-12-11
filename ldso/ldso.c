@@ -30,7 +30,7 @@ static inline void jmp_to_usercode(u64 entry, u64 stack)
 {
 	asm volatile ("mov %[stack], %%rsp\n"
 		      "push %[entry]\n"
-		      "ret" :: [entry]"rm"(entry), [stack]"rm"(stack));
+		      "ret" :: [entry]"r"(entry), [stack]"r"(stack));
 }
 
 void ldso_main(u64 *stack)

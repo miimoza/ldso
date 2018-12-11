@@ -96,6 +96,8 @@ void display_program_header(struct ELF *my_elf)
     ElfW(Shdr) *sh_strtab = &shdr[my_elf->ehdr->e_shstrndx];
     const char *const sh_strtab_p = p + sh_strtab->sh_offset;
     ElfW(Shdr) *my_shdr = my_elf->shdr;
+    char *str_shdr = (void *) my_shdr;
+    my_shdr = (void *) &str_shdr[my_elf->ehdr->e_shentsize];
 
     char *data_str = (void *) my_phdr;
     void *addr_next_phdr = data_str + my_elf->ehdr->e_phentsize;
@@ -112,13 +114,14 @@ void display_program_header(struct ELF *my_elf)
         while (addr_shdr > addr_phdr && addr_shdr < addr_next_phdr)
         {
 
-            printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
 
             printf("hey%s\n", sh_strtab_p + my_shdr->sh_name);
-            sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + my_shdr->sh_name,
+            sprintf(line + strlen(line), "%s%*.10s", sh_strtab_p + my_shdr->sh_name,
                 18 - (int) strlen(sh_strtab_p + my_shdr->sh_name), "");
             char *str_shdr = (void *) my_shdr;
             my_shdr = (void *) &str_shdr[my_elf->ehdr->e_shentsize];
+            addr_shdr = (void *) my_shdr->sh_offset;
+            printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
         }
 
         printf("%s\n", line);
