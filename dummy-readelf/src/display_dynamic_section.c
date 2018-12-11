@@ -172,6 +172,72 @@ void display_dynamic_section(struct ELF *my_elf)
             case DT_POSFLAG_1:
                 type = "POSFLAG_1";
                 break;
+            case DT_SYMINSZ:
+                type = "SYMINSZ";
+                break;
+            case DT_SYMINENT:
+                type = "SYMINENT";
+                break;
+            case DT_ADDRRNGLO:
+                type = "ADDRRNGLO";
+                break;
+            case DT_GNU_HASH:
+                type = "GNU_HASH";
+                break;
+            case DT_TLSDESC_PLT:
+                type = "TLSDESC_PLT";
+                break;
+            case DT_GNU_CONFLICT:
+                type = "GNU_CONFLICT";
+                break;
+            case DT_GNU_LIBLIST:
+                type = "GNU_LIBLIST";
+                break;
+            case DT_CONFIG:
+                type = "CONFIG";
+                break;
+            case DT_DEPAUDIT:
+                type = "DEPAUDIT";
+                break;
+            case DT_AUDIT:
+                type = "AUDIT";
+                break;
+            case DT_PLTPAD:
+                type = "PLTPAD";
+                break;
+            case DT_MOVETAB:
+                type = "MOVETAB";
+                break;
+            case DT_SYMINFO:
+                type = "SYMINFO";
+                break;
+            case DT_VERSYM:
+                type = "VERSYM";
+                break;
+            case DT_RELACOUNT:
+                type = "RELACOUNT";
+                break;
+            case DT_RELCOUNT:
+                type = "RELCOUNT";
+                break;
+            case DT_FLAGS_1:
+                type = "FLAGS_1";
+                break;
+            case DT_VERDEF:
+                type = "VERDEF";
+                break;
+            case DT_VERDEFNUM:
+                type = "VERDEFNUM";
+                break;
+            case DT_VERNEED:
+                type = "VERNEED";
+                break;
+            case DT_VERNEEDNUM:
+                type = "VERNEEDNUM";
+                break;
+            case DT_AUXILIARY:
+                type = "AUXILIARY";
+                break;
             default:
                 type = "";
                 break;

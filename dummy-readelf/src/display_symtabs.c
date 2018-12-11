@@ -201,7 +201,6 @@ void display_symtabs(struct ELF *my_elf)
                 break;
         }
 
-
         printf("%s\n", line);
         free(line);
 

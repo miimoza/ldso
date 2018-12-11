@@ -69,11 +69,11 @@ int main(int argc, char *argv[])
     display_section_header(my_elf);
     printf("\n");
     display_program_header(my_elf);
-    printf("\n");
+    /*printf("\n");
     display_dynamic_section(my_elf);
     printf("\n");
     display_symtabs(my_elf);
-
+    */
     free(my_elf);
     return 0;
 }

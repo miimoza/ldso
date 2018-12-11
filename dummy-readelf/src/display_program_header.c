@@ -12,6 +12,7 @@
 
 void display_program_header(struct ELF *my_elf)
 {
+
     printf("Program Headers:\n");
     printf("  Type           Offset             VirtAddr           PhysAddr\n");
     printf("                 FileSiz            MemSiz              Flags  Align\n");
@@ -83,5 +84,51 @@ void display_program_header(struct ELF *my_elf)
         char *data_str = (void *) my_phdr;
         unsigned offset = my_elf->ehdr->e_phentsize;
         my_phdr = (void *) &data_str[offset];
+    }
+
+    my_phdr = my_elf->phdr;
+
+    printf("\n Section to Segment mapping:\n");
+    printf("  Segment Sections...\n");
+
+    char *p = (char *) my_elf->ehdr;
+    ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + my_elf->ehdr->e_shoff);
+    ElfW(Shdr) *sh_strtab = &shdr[my_elf->ehdr->e_shstrndx];
+    const char *const sh_strtab_p = p + sh_strtab->sh_offset;
+    ElfW(Shdr) *my_shdr = my_elf->shdr;
+
+    char *data_str = (void *) my_phdr;
+    void *addr_next_phdr = data_str + my_elf->ehdr->e_phentsize;
+
+    for (int i = 0; i < my_elf->ehdr->e_phnum; i++)
+    {
+        char *line = malloc(sizeof(char) * 256);
+        sprintf(line + strlen(line), "   %02d     ", i);
+
+
+        char *str_elf = (void *) &my_elf;
+        void *addr_phdr = str_elf + my_phdr->p_offset;
+        void *addr_shdr = str_elf + my_shdr->sh_offset;
+        printf("new section\n");
+        printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
+        while (addr_shdr > addr_phdr && addr_shdr < addr_next_phdr)
+        {
+
+            printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
+
+            printf("hey%s\n", sh_strtab_p + my_shdr->sh_name);
+            sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + my_shdr->sh_name,
+                18 - (int) strlen(sh_strtab_p + my_shdr->sh_name), "");
+            char *str_shdr = (void *) my_shdr;
+            my_shdr = (void *) &str_shdr[my_elf->ehdr->e_shentsize];
+        }
+
+        printf("%s\n", line);
+        free(line);
+
+        char *data_str = (void *) my_phdr;
+        ElfW(Phdr) *next_phdr = (void *) (data_str + (my_elf->ehdr->e_phentsize * 2));
+        addr_next_phdr = str_elf + next_phdr->p_offset;
+        my_phdr = (void *) (data_str + my_elf->ehdr->e_phentsize);
     }
 }

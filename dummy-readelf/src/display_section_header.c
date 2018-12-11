@@ -128,6 +128,4 @@ void display_section_header(struct ELF *my_elf)
     printf("  L (link order), O (extra OS processing required), G (group), T (TLS),\n");
     printf("  C (compressed), x (unknown), o (OS specific), E (exclude),\n");
     printf("  l (large), p (processor specific)\n");
-
-
 }
