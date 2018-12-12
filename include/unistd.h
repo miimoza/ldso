@@ -13,7 +13,9 @@ struct iovec;
 i64 writev(int fd, const struct iovec *iov, int iovcnt);
 
 int open(const char *file, int flags, ...);
+int close(int fd);
 
+int stat(const char *pathname, struct stat *statbuf);
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)

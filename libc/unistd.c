@@ -1,4 +1,5 @@
 #include <asm/unistd.h>
+#include <asm/stat.h>
 #include <stddef.h>
 
 #include "types.h"
@@ -16,7 +17,6 @@ i64 write(int fd, const void *buf, size_t len)
 	return syscall3(__NR_write, fd, (u64)buf, len);
 }
 
-
 i64 writev(int fd, const struct iovec *iov, int iovcnt)
 {
 	return syscall3(__NR_writev, fd, (u64)iov, iovcnt);
@@ -27,6 +27,17 @@ int open(const char *file, int flags, ...)
 	register int mode asm("%rdx");
 	return syscall3(__NR_open, (u64)file, flags, mode);
 }
+
+int close(int fd)
+{
+	return syscall1(__NR_close, fd);
+}
+
+int stat(const char *pathname, struct stat *statbuf)
+{
+	return syscall2(__NR_stat, (u64)pathname, (u64)statbuf);
+}
+
 
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, i64 offset)
 {
