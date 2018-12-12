@@ -18,6 +18,7 @@ LDSO_OBJS = \
 	    ldso/ldso_start.o \
 	    \
 	    ldso/ldso.o \
+		ldso/display_auxv.o \
 	    $(LIBC_STDIO_OBJS) \
 	    $(LIBC_STRING_OBJS) \
 	    $(LIBC_UNISTD_OBJS) \
@@ -102,3 +103,6 @@ libc/malloc.o: CPPFLAGS += $(MALLOC_CPPFLAGS)
 
 %.so:
 	$(LINK.o) -shared $^ $(LDLIBS) -o $@
+
+clean:
+	$(RM) $(LDSO_OBJS) $(LIBC_OBJS) $(USELESS_OBJS) $(TEST_LIBS) $(TESTS) $(TARGETS)

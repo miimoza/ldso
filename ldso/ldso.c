@@ -6,8 +6,11 @@
 #include <asm/mman.h>
 #include <asm-generic/fcntl.h>
 
+#include "ldso.h"
 #include "types.h"
 #include "unistd.h"
+#include "stdio.h"
+
 
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type)
 {
@@ -42,6 +45,8 @@ void ldso_main(u64 *stack)
 	ElfW(auxv_t) *auxv = find_auxv(envp);
 
 	u64 entry = get_auxv_entry(auxv, AT_ENTRY)->a_un.a_val;
+
+	display_auxv(auxv);
 
 	jmp_to_usercode(entry, (u64)stack);
 }
