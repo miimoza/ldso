@@ -13,14 +13,6 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type)
-{
-	for (; auxv->a_type != AT_NULL; auxv++)
-		if (auxv->a_type == type)
-			return auxv;
-	return NULL;
-}
-
 ElfW(auxv_t) *find_auxv(char **envp)
 {
 	unsigned auxv_display_enable = 0;
@@ -45,7 +37,7 @@ static inline void jmp_to_usercode(u64 entry, u64 stack)
 		      "ret" :: [entry]"r"(entry), [stack]"r"(stack));
 }
 
-static struct ELF *loader(char *pathname)
+static struct ELF *elf_loader(char *pathname)
 {
 	struct stat stat_buffer;
 	stat(pathname, &stat_buffer);
@@ -93,7 +85,7 @@ void ldso_main(u64 *stack)
 	ElfW(auxv_t) *auxv = find_auxv(envp);
 	u64 entry = get_auxv_entry(auxv, AT_ENTRY)->a_un.a_val;
 
-	struct ELF *my_elf = loader(argv[0]);
+	struct ELF *my_elf = elf_loader(argv[0]);
 	display_ldd(my_elf);
 
 	jmp_to_usercode(entry, (u64)stack);

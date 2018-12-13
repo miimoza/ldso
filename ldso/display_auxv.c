@@ -27,6 +27,14 @@ static void c_display(char *buf, char *field, u64 value)
         16 - strlen(field), " ", value);
 }
 
+ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type)
+{
+	for (; auxv->a_type != AT_NULL; auxv++)
+		if (auxv->a_type == type)
+			return auxv;
+	return NULL;
+}
+
 void display_auxv(ElfW(auxv_t) *auxv)
 {
     char *buf = malloc(sizeof(char) * 512);

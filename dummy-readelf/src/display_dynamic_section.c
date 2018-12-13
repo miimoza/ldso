@@ -244,11 +244,9 @@ void display_dynamic_section(struct ELF *my_elf)
         }
 
         sprintf(line + strlen(line), "(%s)%*.s", type, 18 - (int) strlen(type), " ");
-
         sprintf(line + strlen(line), " 0x%lx", my_dyn->d_un.d_val);
 
         printf("%s\n", line);
-
         free(line);
 
         my_dyn++;

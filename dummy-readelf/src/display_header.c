@@ -118,8 +118,6 @@ void display_elf_header(struct ELF *my_elf)
             break;
     }
 
-
-
     switch (my_elf->ehdr->e_machine) {
         case EM_NONE:
             c_display("Machine:", "An unknown machine");
@@ -180,22 +178,22 @@ void display_elf_header(struct ELF *my_elf)
             break;
     }
 
-    char *version = malloc(sizeof(char) * 4);
+    char *version = malloc(sizeof(char) * 16);
     sprintf(version, "0x%x", my_elf->ehdr->e_version);
     c_display("Version:", version);
     free(version);
 
-    char *entry = malloc(sizeof(char) * 4);
+    char *entry = malloc(sizeof(char) * 16);
     sprintf(entry, "0x%lx", my_elf->ehdr->e_entry);
     c_display("Entry point address:", entry);
     free(entry);
 
-    char *phoff = malloc(sizeof(char) * 4);
+    char *phoff = malloc(sizeof(char) * 16);
     sprintf(phoff, "%ld (bytes into file)", my_elf->ehdr->e_phoff);
     c_display("Start of program headers:", phoff);
     free(phoff);
 
-    char *shoff = malloc(sizeof(char) * 4);
+    char *shoff = malloc(sizeof(char) * 16);
     sprintf(shoff, "%ld (bytes into file)", my_elf->ehdr->e_shoff);
     c_display("Start of program headers:", shoff);
     free(shoff);

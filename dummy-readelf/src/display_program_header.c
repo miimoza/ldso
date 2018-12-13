@@ -82,8 +82,7 @@ void display_program_header(struct ELF *my_elf)
         free(line);
 
         char *data_str = (void *) my_phdr;
-        unsigned offset = my_elf->ehdr->e_phentsize;
-        my_phdr = (void *) &data_str[offset];
+        my_phdr = (void *) &data_str[my_elf->ehdr->e_phentsize];
     }
 
     my_phdr = my_elf->phdr;
@@ -91,16 +90,16 @@ void display_program_header(struct ELF *my_elf)
     printf("\n Section to Segment mapping:\n");
     printf("  Segment Sections...\n");
 
-    char *p = (char *) my_elf->ehdr;
-    ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + my_elf->ehdr->e_shoff);
-    ElfW(Shdr) *sh_strtab = &shdr[my_elf->ehdr->e_shstrndx];
-    const char *const sh_strtab_p = p + sh_strtab->sh_offset;
+    char *my_elf_str = (char *) my_elf->ehdr;
+    ElfW(Shdr) *sh_strtab = &my_elf->shdr[my_elf->ehdr->e_shstrndx];
+    const char *const sh_strtab_p = my_elf_str + sh_strtab->sh_offset;
+
     ElfW(Shdr) *my_shdr = my_elf->shdr;
     char *str_shdr = (void *) my_shdr;
     my_shdr = (void *) &str_shdr[my_elf->ehdr->e_shentsize];
 
-    char *data_str = (void *) my_phdr;
-    void *addr_next_phdr = data_str + my_elf->ehdr->e_phentsize;
+    char *my_phdr_str = (void *) my_phdr;
+    void *addr_next_phdr = my_phdr_str + my_elf->ehdr->e_phentsize;
 
     for (int i = 0; i < my_elf->ehdr->e_phnum; i++)
     {
@@ -121,9 +120,9 @@ void display_program_header(struct ELF *my_elf)
         printf("%s\n", line);
         free(line);
 
-        char *data_str = (void *) my_phdr;
-        ElfW(Phdr) *next_phdr = (void *) (data_str + (my_elf->ehdr->e_phentsize * 2));
+        char *my_phdr_str = (void *) my_phdr;
+        ElfW(Phdr) *next_phdr = (void *) (my_phdr_str + (my_elf->ehdr->e_phentsize * 2));
         addr_next_phdr = (void *) next_phdr->p_offset;
-        my_phdr = (void *) (data_str + my_elf->ehdr->e_phentsize);
+        my_phdr = (void *) (my_phdr_str + my_elf->ehdr->e_phentsize);
     }
 }

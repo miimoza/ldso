@@ -23,13 +23,10 @@ void display_section_header(struct ELF *my_elf)
         char *line = malloc(sizeof(char) * 256);
         sprintf(line + strlen(line), "  [%.*s%d] ", (i < 10), " ", i);
 
-        char *p = (char *) my_elf->ehdr;
-        ElfW(Shdr) *shdr = (ElfW(Shdr) *) (p + my_elf->ehdr->e_shoff);
-        ElfW(Shdr) *sh_strtab = &shdr[my_elf->ehdr->e_shstrndx];
-        const char *const sh_strtab_p = p + sh_strtab->sh_offset;
 
-        sprintf(line + strlen(line), "%s%*.18s", sh_strtab_p + my_shdr->sh_name,
-            18 - (int) strlen(sh_strtab_p + my_shdr->sh_name), "");
+        char *name = get_section_name(my_elf, my_shdr);
+        sprintf(line + strlen(line), "%s%*.18s", name,
+            18 - (int) strlen(name), "");
 
         char *type;
         switch (my_shdr->sh_type)
@@ -94,9 +91,7 @@ void display_section_header(struct ELF *my_elf)
 
         //OFFSET
         sprintf(line + strlen(line), "       %0*lx", 16, my_shdr->sh_size);
-
         sprintf(line + strlen(line), "  %0*lx", 16, my_shdr->sh_entsize);
-
 
         char *flags = malloc(sizeof(char) * 8);
         if (my_shdr->sh_flags & SHF_WRITE)
@@ -119,8 +114,7 @@ void display_section_header(struct ELF *my_elf)
         free(line);
 
         char *data_str = (void *) my_shdr;
-        unsigned offset = my_elf->ehdr->e_shentsize;
-        my_shdr = (void *) &data_str[offset];
+        my_shdr = (void *) &data_str[my_elf->ehdr->e_shentsize];
     }
 
     printf("Key to Flags:\n");
