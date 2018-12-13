@@ -77,8 +77,15 @@ void display_program_header(struct ELF *my_elf)
 
         sprintf(line + strlen(line), " 0x%lx", my_phdr->p_align);
 
-        printf("%s\n", line);
+        if (my_phdr->p_type == PT_INTERP)
+        {
+            char *my_elf_str = (void *) my_elf->ehdr;
+            sprintf(line + strlen(line),
+                "\n%*.s[Requesting program interpreter: %s]", 6, " ",
+                (char *) &my_elf_str[get_section(my_elf, ".interp")->sh_offset]);
+        }
 
+        printf("%s\n", line);
         free(line);
 
         char *data_str = (void *) my_phdr;
