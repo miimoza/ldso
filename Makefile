@@ -19,6 +19,9 @@ LDSO_OBJS = \
 	    \
 	    ldso/ldso.o \
 		ldso/display_auxv.o \
+		ldso/helper.o \
+		ldso/display_ldd.o \
+		ldso/ELF_utils.o \
 	    $(LIBC_STDIO_OBJS) \
 	    $(LIBC_STRING_OBJS) \
 	    $(LIBC_UNISTD_OBJS) \

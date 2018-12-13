@@ -109,18 +109,13 @@ void display_program_header(struct ELF *my_elf)
 
         void *addr_phdr = (void *) my_phdr->p_offset;
         void *addr_shdr = (void *) my_shdr->sh_offset;
-        //printf("new section\n");
-        //printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
+
         while (addr_shdr > addr_phdr && addr_shdr < addr_next_phdr)
         {
-
-
-            //printf("hey%s\n", sh_strtab_p + my_shdr->sh_name);
             sprintf(line + strlen(line), "%s ", sh_strtab_p + my_shdr->sh_name);
             char *str_shdr = (void *) my_shdr;
             my_shdr = (void *) &str_shdr[my_elf->ehdr->e_shentsize];
             addr_shdr = (void *) my_shdr->sh_offset;
-            //printf("%p in [%p; %p] ?\n", addr_shdr, addr_phdr, addr_next_phdr);
         }
 
         printf("%s\n", line);

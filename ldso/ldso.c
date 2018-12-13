@@ -11,7 +11,7 @@
 #include "types.h"
 #include "unistd.h"
 #include "stdio.h"
-
+#include "stdlib.h"
 
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type)
 {
@@ -45,6 +45,45 @@ static inline void jmp_to_usercode(u64 entry, u64 stack)
 		      "ret" :: [entry]"r"(entry), [stack]"r"(stack));
 }
 
+static struct ELF *loader(char *pathname)
+{
+	struct stat stat_buffer;
+	stat(pathname, &stat_buffer);
+	int fd = open(pathname, O_RDONLY);
+	struct ELF *my_elf = malloc(sizeof(struct ELF));
+	my_elf->ehdr = mmap(0, stat_buffer.st_size,
+        PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+	close(fd);
+
+	char *shdr_str = (void *) my_elf->ehdr;
+	my_elf->shdr = (void *) shdr_str + my_elf->ehdr->e_shoff;
+
+    ElfW(Shdr) *section = my_elf->shdr;
+	unsigned i = 0;
+    while(i < my_elf->ehdr->e_shnum)
+    {
+        if (section->sh_type == SHT_DYNAMIC)
+        {
+            my_elf->dyn = (void *) shdr_str + section->sh_offset;
+            my_elf->shdr_dyn = section;
+        }
+		if (section->sh_type == SHT_DYNSYM)
+        {
+            my_elf->dynsym = (void *) shdr_str + section->sh_offset;
+            my_elf->shdr_dynsym = section;
+        }
+
+        char *section_str = (void *) section;
+        section = (void *) section_str + my_elf->ehdr->e_shentsize;
+        i++;
+    }
+
+	my_elf->dynstr = (void *) shdr_str + get_section(my_elf, ".dynstr")->sh_offset;
+	my_elf->shdr_dynstr = get_section(my_elf, ".dynstr");
+
+	return my_elf;
+}
+
 void ldso_main(u64 *stack)
 {
 	int argc = *stack;
@@ -54,17 +93,8 @@ void ldso_main(u64 *stack)
 	ElfW(auxv_t) *auxv = find_auxv(envp);
 	u64 entry = get_auxv_entry(auxv, AT_ENTRY)->a_un.a_val;
 
-	struct stat stat_buffer;
-	stat("test-standalone", &stat_buffer);
-	ElfW(Ehdr) *my_elf = mmap((void *) entry, stat_buffer.st_size,
-        PROT_READ|PROT_WRITE, MAP_PRIVATE, -1, 0);
-	printf("sh_off:%lx\n", my_elf->e_phoff);
-
-	my_elf = my_elf;
-
-
-
-
+	struct ELF *my_elf = loader(argv[0]);
+	display_ldd(my_elf);
 
 	jmp_to_usercode(entry, (u64)stack);
 }
