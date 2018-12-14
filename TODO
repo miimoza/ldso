@@ -1,5 +1,2 @@
-- lire tout LD_LIBRARY_PATH, le mettre dans une structure, en liste chaine
-- chercher dans chaque PATH si les libs sont dedans
-- refaire structure complete en enlevant name et link_map de l'elf, struct context ? 
-- fonction get_dyn_num()
+- chercher dans chaque PATH si les libs sont dedans 
 - refaire ldd a la bien avec la recursion l'adresse tout ca
