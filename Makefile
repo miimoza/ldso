@@ -20,7 +20,6 @@ LDSO_OBJS = \
 	    ldso/ldso.o \
 		ldso/display_auxv.o \
 		ldso/helper.o \
-		ldso/display_ldd.o \
 		ldso/ELF_utils.o \
 		ldso/build_link_map.o \
 		ldso/ELF_loader.o \
