@@ -25,8 +25,11 @@ struct ELF
     ElfW(Shdr) *shdr_dynstr;
 
     struct link_map *link_map;
+    
 };
 
+
+struct ELF *elf_loader(char *pathname);
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type);
 
 // DISPLAY

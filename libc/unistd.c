@@ -38,7 +38,6 @@ int stat(const char *pathname, struct stat *statbuf)
 	return syscall2(__NR_stat, (u64)pathname, (u64)statbuf);
 }
 
-
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, i64 offset)
 {
 	i64 rc = syscall6(__NR_mmap, (u64)addr, len, prot, flags, fd, offset);

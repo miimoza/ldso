@@ -7,7 +7,7 @@
 
 static void print_link_map(struct link_map *my_link_map)
 {
-    while (my_link_map->l_next)
+    while (my_link_map)
     {
         printf("l_addr:%lx\n", my_link_map->l_addr);
         printf("l_name:%s\n", my_link_map->l_name);
@@ -19,39 +19,41 @@ static void print_link_map(struct link_map *my_link_map)
     }
 }
 
-static struct link_map *rec_load_library(char *lib_filename, struct link_map *prev)
+static struct link_map *last_link_map(struct link_map *my_link_map)
 {
-    printf("About to load %s\n", lib_filename);
-    struct link_map *my_link_map = malloc(sizeof(struct link_map));
-
-    /*
-    my_link_map->l_addr =
-    my_link_map->l_name =
-    my_link_map->l_ld =
-    */
-    my_link_map->l_prev = prev;
-
+    while (my_link_map->l_next)
+        my_link_map = my_link_map->l_next;
     return my_link_map;
 }
 
-static struct link_map *load_libraries(struct ELF *my_elf, struct link_map *my_link_map)
+static struct link_map *rec_load_library(char *lib_filename, struct link_map *prev)
 {
-    //char *ld_library_path = ".";
+    struct link_map *my_link_map = malloc(sizeof(struct link_map));
 
-    char *my_elf_str = (void *) my_elf->ehdr;
-    ElfW(Dyn) *my_dyn_section = my_elf->dyn;
+    struct ELF *my_lib = elf_loader(lib_filename);
+
+    my_link_map->l_addr = (ElfW(Addr)) my_lib->ehdr;
+    my_link_map->l_name = lib_filename;
+    my_link_map->l_ld = my_lib->dyn;
+    my_link_map->l_prev = prev;
+    my_link_map->l_next = NULL;
+
+    char *my_lib_str = (void *) my_lib->ehdr;
+    ElfW(Dyn) *my_dyn_section = my_lib->dyn;
 
     int nb_elt_dyn = 1;
     for (ElfW(Dyn) *i = my_dyn_section; i->d_tag != DT_NULL; i++)
         nb_elt_dyn++;
 
+    struct link_map *current_link_map = my_link_map;
     for (int i = 0; i < nb_elt_dyn; i++)
     {
         if (my_dyn_section->d_tag == DT_NEEDED)
         {
-            char *lib_filename = my_elf_str + my_elf->shdr_dynstr->sh_offset
+            char *lib_filename = my_lib_str + my_lib->shdr_dynstr->sh_offset
                 + my_dyn_section->d_un.d_val;
-            my_link_map = rec_load_library(lib_filename, my_link_map);
+            current_link_map->l_next = rec_load_library(lib_filename, my_link_map);
+            current_link_map = last_link_map(current_link_map);
         }
         my_dyn_section++;
     }
@@ -59,20 +61,65 @@ static struct link_map *load_libraries(struct ELF *my_elf, struct link_map *my_l
     return my_link_map;
 }
 
-
-struct link_map *build_link_map(struct ELF *my_elf)
+struct link_map *load_binary(struct ELF *my_elf)
 {
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
     my_elf->link_map = my_link_map;
+
     my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
     my_link_map->l_name = my_elf->name;
     my_link_map->l_ld = my_elf->dyn;
     my_link_map->l_prev = NULL;
+    my_link_map->l_next = NULL;
+
+    return my_link_map;
+}
+
+struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
+{
+    struct link_map *my_link_map = malloc(sizeof(struct link_map));
+    char *my_elf_str = (void *) my_elf->ehdr;
+    char *ldso_filename = (char *)
+        &my_elf_str[get_section(my_elf, ".interp")->sh_offset];
+    struct ELF *my_ldso = elf_loader(ldso_filename);
+    my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
+    my_link_map->l_name = ldso_filename;
+    my_link_map->l_ld = my_ldso->dyn;
+    my_link_map->l_prev = prev;
+    my_link_map->l_next = NULL;
+
+    return my_link_map;
+}
 
 
-    // (char *) &my_elf_str[get_section(my_elf, ".interp")->sh_offset]);
-    print_link_map(my_link_map);
-    my_link_map->l_next = load_libraries(my_elf, my_link_map);
+struct link_map *build_link_map(struct ELF *my_elf)
+{
+    struct link_map *my_link_map = load_binary(my_elf);
+    my_link_map->l_next = load_ldso(my_elf, my_link_map);
+    my_link_map = my_link_map->l_next;
+
+    ElfW(Dyn) *my_dyn_section = my_elf->dyn;
+
+    int nb_elt_dyn = 1;
+    for (ElfW(Dyn) *i = my_dyn_section; i->d_tag != DT_NULL; i++)
+        nb_elt_dyn++;
+
+    char *my_elf_str = (void *) my_elf->ehdr;
+
+
+    for (int i = 0; i < nb_elt_dyn; i++)
+    {
+        if (my_dyn_section->d_tag == DT_NEEDED)
+        {
+            char *lib_filename = my_elf_str + my_elf->shdr_dynstr->sh_offset
+                + my_dyn_section->d_un.d_val;
+            my_link_map->l_next = rec_load_library(lib_filename, my_link_map);
+            my_link_map = last_link_map(my_link_map);
+        }
+        my_dyn_section++;
+    }
+
+    print_link_map(my_elf->link_map);
 
     return my_elf->link_map;
 }

@@ -1,2 +1,10 @@
 -> stderr auxv
 hex 144 ou 143 par rapport a la au dynsym + l'offset
+
+// LOAD THE BINARY
+my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
+my_link_map->l_name = my_elf->name;
+my_link_map->l_ld = my_elf->dyn;
+my_link_map->l_prev = NULL;
+my_link_map->l_next = NULL;
+my_link_map++;
