@@ -110,4 +110,4 @@ libc/malloc.o: CPPFLAGS += $(MALLOC_CPPFLAGS)
 	$(LINK.o) -shared $^ $(LDLIBS) -o $@
 
 clean:
-	$(RM) $(LDSO_OBJS) $(LIBC_OBJS) $(USELESS_OBJS) $(TEST_LIBS) $(TESTS) $(TARGETS)
+	$(RM) $(LDSO_OBJS) $(LIBC_OBJS) $(USELESS_OBJS) $(TEST_LIBS) $(TESTS) $(TARGETS) libc/crt0.o tests/test-standalone.o

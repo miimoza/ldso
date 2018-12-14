@@ -16,15 +16,17 @@
 
 int env_var_display;
 
-ElfW(auxv_t) *find_auxv(char **envp)
+static ElfW(auxv_t) *find_auxv(struct Context *my_context, char **envp)
 {
 	env_var_display = 0;
 	while (*envp != NULL)
 	{
-		if (my_var_cmp(*envp, "LD_SHOW_AUXV=1"))
+		if (my_var_cmp(*envp, "LD_SHOW_AUXV="))
 			env_var_display += VAR_LD_SHOW_AUXV;
-		if (my_var_cmp(*envp, "LD_TRACE_LOADED_OBJECTS=1"))
+		if (my_var_cmp(*envp, "LD_TRACE_LOADED_OBJECTS="))
 			env_var_display += VAR_LD_TRACE_LOADED_OBJECTS;
+		if (my_var_cmp(*envp, "LD_LIBRARY_PATH="))
+			my_context->library_path_list = build_library_path_list(*envp);
 		envp++;
 	}
 	envp++;
@@ -53,22 +55,18 @@ void ldso_main(u64 *stack)
 	char **argv = (void *)&stack[1];
 	char **envp = argv + argc + 1;
 
-	ElfW(auxv_t) *auxv = find_auxv(envp);
-
-
-	struct ELF *my_elf = elf_loader(argv[0]);
+	struct Context *my_context = malloc(sizeof(struct Context));
+	my_context->auxv = find_auxv(my_context, envp);
+	my_context->bin = elf_loader(argv[0]);
 
 	if (env_var_display & VAR_LD_SHOW_AUXV)
-		display_auxv(auxv);
+		display_auxv(my_context->auxv);
 	if (env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
-		display_ldd(my_elf);
+		display_ldd(my_context->bin);
 
-	struct link_map *my_link_map = build_link_map(my_elf);
-	my_link_map = my_link_map;
+	my_context->link_map = build_link_map(my_context->bin);
 
-	u64 entry = get_auxv_entry(auxv, AT_ENTRY)->a_un.a_val;
-	entry = entry;
-
+	u64 entry = get_auxv_entry(my_context->auxv, AT_ENTRY)->a_un.a_val;
 	printf("end\n");
 	jmp_to_usercode(entry, (u64)stack);
 }

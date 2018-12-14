@@ -17,8 +17,8 @@ struct ELF *elf_loader(char *pathname)
 	int fd = open(pathname, O_RDONLY);
 	struct ELF *my_elf = malloc(sizeof(struct ELF));
 
-	my_elf->name = malloc(sizeof(char) * strlen(pathname));
-	memcpy(my_elf->name, pathname, strlen(pathname));
+	my_elf->pathname = malloc(sizeof(char) * strlen(pathname));
+	memcpy(my_elf->pathname, pathname, strlen(pathname));
 
 	my_elf->ehdr = mmap(0, stat_buffer.st_size,
         PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);

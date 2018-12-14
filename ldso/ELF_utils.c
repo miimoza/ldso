@@ -1,4 +1,43 @@
 #include "ldso.h"
+#include "string.h"
+#include "stdlib.h"
+
+struct path_list *rec_path_list(char *lib_path_var)
+{
+    int i = 0;
+    while (lib_path_var[i] != '\0' && lib_path_var[i] != ':')
+        i++;
+
+    struct path_list *my_path_list = malloc(sizeof(struct path_list));
+    my_path_list->pathname = malloc(sizeof(char) * (i + 1));
+    memcpy(my_path_list->pathname, lib_path_var, i);
+    my_path_list->pathname[i] = '\0';
+
+    if (lib_path_var[i] == ':')
+        my_path_list->next = rec_path_list(lib_path_var + i + 1);
+
+    return my_path_list;
+}
+
+
+// Fill the path_list structure with the string, each path being separate by :
+struct path_list *build_library_path_list(char *lib_path_var)
+{
+    int i = 0;
+    while (lib_path_var[i] != '=')
+        i++;
+
+    return rec_path_list(lib_path_var + i + 1);
+}
+
+// Return number of elements in the dynamic table
+int get_dyn_num(ElfW(Dyn) *my_dyn_section)
+{
+    int nb_elt_dyn = 1;
+    for (ElfW(Dyn) *i = my_dyn_section; i->d_tag != DT_NULL; i++)
+        nb_elt_dyn++;
+    return nb_elt_dyn;
+}
 
 // Return the name of the section from the address of the section header.
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section)
