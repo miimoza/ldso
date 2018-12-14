@@ -2,16 +2,23 @@
 #include "string.h"
 #include "stdlib.h"
 
-struct path_list *rec_path_list(char *lib_path_var)
+struct path_list *create_path_node(char *pathname, int len)
+{
+    struct path_list *my_path_list = malloc(sizeof(struct path_list));
+    my_path_list->pathname = malloc(sizeof(char) * (len + 1));
+    memcpy(my_path_list->pathname, pathname, len);
+    my_path_list->pathname[len] = '\0';
+
+    return my_path_list;
+}
+
+static struct path_list *rec_path_list(char *lib_path_var)
 {
     int i = 0;
     while (lib_path_var[i] != '\0' && lib_path_var[i] != ':')
         i++;
 
-    struct path_list *my_path_list = malloc(sizeof(struct path_list));
-    my_path_list->pathname = malloc(sizeof(char) * (i + 1));
-    memcpy(my_path_list->pathname, lib_path_var, i);
-    my_path_list->pathname[i] = '\0';
+    struct path_list *my_path_list = create_path_node(lib_path_var, i);
 
     if (lib_path_var[i] == ':')
         my_path_list->next = rec_path_list(lib_path_var + i + 1);

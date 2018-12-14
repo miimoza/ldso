@@ -1,4 +1,13 @@
 #include "ldso.h"
+#include "string.h"
+
+char *get_name_from_path(char *path)
+{
+    int i = strlen(path) - 1;
+    while (path[i] != '\0' && path[i] != '/')
+        i--;
+    return path + i + 1;
+}
 
 int my_var_cmp(char *a, char *b)
 {

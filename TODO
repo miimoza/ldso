@@ -1,2 +1,1 @@
-- chercher dans chaque PATH si les libs sont dedans 
-- refaire ldd a la bien avec la recursion l'adresse tout ca
+ - refaire ldd a la bien avec la recursion l'adresse tout ca

@@ -17,6 +17,7 @@ struct path_list
 struct Context
 {
     ElfW(auxv_t) *auxv;
+    int env_var_display;
     struct path_list *library_path_list;
     struct ELF *bin;
     struct link_map *link_map;
@@ -40,18 +41,23 @@ struct ELF
 
 // MAIN FUNCTIONS
 struct ELF *elf_loader(char *pathname);
-struct link_map *build_link_map(struct ELF *my_elf);
+struct link_map *build_link_map(struct Context *my_context,
+    struct ELF *my_elf, struct path_list *library_path);
 
 // DISPLAY
 void display_auxv(ElfW(auxv_t) *auxv);
-void display_ldd(struct ELF *my_elf);
+
 
 // HELPER
+char *get_name_from_path(char *path);
 int my_var_cmp(char *a, char *b);
 int my_str_cmp(char *a, char *b);
 
-// UTILS
+// PATH LISTS
 struct path_list *build_library_path_list(char *lib_path_var);
+struct path_list *create_path_node(char *pathname, int len);
+
+// UTILS
 int get_dyn_num(ElfW(Dyn) *my_dyn);
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section);
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name);
