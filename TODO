@@ -1,10 +1,5 @@
--> stderr auxv
-hex 144 ou 143 par rapport a la au dynsym + l'offset
-
-// LOAD THE BINARY
-my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
-my_link_map->l_name = my_elf->name;
-my_link_map->l_ld = my_elf->dyn;
-my_link_map->l_prev = NULL;
-my_link_map->l_next = NULL;
-my_link_map++;
+- lire tout LD_LIBRARY_PATH, le mettre dans une structure, en liste chaine
+- chercher dans chaque PATH si les libs sont dedans
+- refaire structure complete en enlevant name et link_map de l'elf, struct context ? 
+- fonction get_dyn_num()
+- refaire ldd a la bien avec la recursion l'adresse tout ca
