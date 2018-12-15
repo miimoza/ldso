@@ -10,22 +10,32 @@
 #include "string.h"
 #include "stdlib.h"
 
-struct ELF *elf_loader(char *pathname)
+struct ELF *elf_loader(char *pathname, void *addr)
 {
-	struct stat stat_buffer;
-	stat(pathname, &stat_buffer);
-	int fd = open(pathname, O_RDONLY);
 	struct ELF *my_elf = malloc(sizeof(struct ELF));
 
-	my_elf->pathname = malloc(sizeof(char) * strlen(pathname));
-	memcpy(my_elf->pathname, pathname, strlen(pathname));
 
-	my_elf->ehdr = mmap(0, stat_buffer.st_size,
-        PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-	close(fd);
+	if (pathname) // LOADED BY PATHNAME
+	{
+		struct stat stat_buffer;
+		stat(pathname, &stat_buffer);
+		int fd = open(pathname, O_RDONLY);
 
-	char *shdr_str = (void *) my_elf->ehdr;
-	my_elf->shdr = (void *) shdr_str + my_elf->ehdr->e_shoff;
+		my_elf->pathname = malloc(sizeof(char) * strlen(pathname));
+		memcpy(my_elf->pathname, pathname, strlen(pathname));
+
+		my_elf->ehdr = mmap(0, stat_buffer.st_size,
+	        PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+		close(fd);
+	}
+	else // ALREADY LOADED IN THE MEMORY
+	{
+		my_elf->ehdr = addr;
+	}
+
+
+	char *ehdr_str = (void *) my_elf->ehdr;
+	my_elf->shdr = (void *) ehdr_str + my_elf->ehdr->e_shoff;
 
     ElfW(Shdr) *section = my_elf->shdr;
 	unsigned i = 0;
@@ -33,12 +43,12 @@ struct ELF *elf_loader(char *pathname)
     {
         if (section->sh_type == SHT_DYNAMIC)
         {
-            my_elf->dyn = (void *) shdr_str + section->sh_offset;
+            my_elf->dyn = (void *) ehdr_str + section->sh_offset;
             my_elf->shdr_dyn = section;
         }
 		if (section->sh_type == SHT_DYNSYM)
         {
-            my_elf->dynsym = (void *) shdr_str + section->sh_offset;
+            my_elf->dynsym = (void *) ehdr_str + section->sh_offset;
             my_elf->shdr_dynsym = section;
         }
 
@@ -47,7 +57,7 @@ struct ELF *elf_loader(char *pathname)
         i++;
     }
 
-	my_elf->dynstr = (void *) shdr_str + get_section(my_elf, ".dynstr")->sh_offset;
+	my_elf->dynstr = (void *) ehdr_str + get_section(my_elf, ".dynstr")->sh_offset;
 	my_elf->shdr_dynstr = get_section(my_elf, ".dynstr");
 	return my_elf;
 }

@@ -30,7 +30,7 @@ static void c_display(char *buf, char *field, u64 value)
 void display_auxv(ElfW(auxv_t) *auxv)
 {
     char *buf = malloc(sizeof(char) * 512);
-    c_display_addr(buf, "AT_SYSINFO_EHDR", get_auxv_entry(auxv, AT_ENTRY)->a_un.a_val);
+    c_display_addr(buf, "AT_SYSINFO_EHDR", get_auxv_entry(auxv, AT_SYSINFO_EHDR)->a_un.a_val);
     c_display(buf, "AT_HWCAP", get_auxv_entry(auxv, AT_HWCAP)->a_un.a_val);
     c_display(buf, "AT_PAGESZ", get_auxv_entry(auxv, AT_PAGESZ)->a_un.a_val);
     c_display(buf, "AT_CLKTCK", get_auxv_entry(auxv, AT_CLKTCK)->a_un.a_val);

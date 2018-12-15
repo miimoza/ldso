@@ -40,7 +40,7 @@ struct ELF
 };
 
 // MAIN FUNCTIONS
-struct ELF *elf_loader(char *pathname);
+struct ELF *elf_loader(char *pathname, void *addr);
 struct link_map *build_link_map(struct Context *my_context,
     struct ELF *my_elf, struct path_list *library_path);
 

@@ -61,7 +61,7 @@ static struct link_map *rec_load_library(char *lib_filename,
 
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
 
-    struct ELF *my_lib = elf_loader(path);
+    struct ELF *my_lib = elf_loader(path, NULL);
 
     my_link_map->l_addr = (ElfW(Addr)) my_lib->ehdr;
     my_link_map->l_name = path;
@@ -91,46 +91,10 @@ static struct link_map *rec_load_library(char *lib_filename,
     return my_link_map;
 }
 
-struct link_map *load_binary(struct ELF *my_elf)
+static void load_libraries(struct ELF *my_elf,
+    struct path_list *library_path, struct link_map *my_link_map)
 {
-    struct link_map *my_link_map = malloc(sizeof(struct link_map));
-    my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
-    my_link_map->l_name = my_elf->pathname;
-    my_link_map->l_ld = my_elf->dyn;
-    my_link_map->l_prev = NULL;
-    my_link_map->l_next = NULL;
-
-    return my_link_map;
-}
-
-struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
-{
-    struct link_map *my_link_map = malloc(sizeof(struct link_map));
-    char *my_elf_str = (void *) my_elf->ehdr;
-    char *ldso_filename = (char *)
-        &my_elf_str[get_section(my_elf, ".interp")->sh_offset];
-    struct ELF *my_ldso = elf_loader(ldso_filename);
-    my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
-    my_link_map->l_name = ldso_filename;
-    my_link_map->l_ld = my_ldso->dyn;
-    my_link_map->l_prev = prev;
-    my_link_map->l_next = NULL;
-
-    return my_link_map;
-}
-
-
-struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
-    struct path_list *library_path)
-{
-    struct link_map *my_link_map = load_binary(my_elf);
-    struct link_map *ret_link_map = my_link_map;
-    my_link_map->l_next = load_ldso(my_elf, my_link_map);
-    my_link_map = my_link_map->l_next;
-
     ElfW(Dyn) *my_dyn_section = my_elf->dyn;
-
-    struct link_map *lib_link_map = my_link_map;
 
     int nb_elt_dyn = get_dyn_num(my_dyn_section);
     char *my_elf_str = (void *) my_elf->ehdr;
@@ -146,8 +110,87 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
         }
         my_dyn_section++;
     }
+}
 
-    if (lib_link_map->l_next && my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
-        display_ldd(lib_link_map->l_next);
+static struct link_map *load_binary(struct ELF *my_elf)
+{
+    struct link_map *my_link_map = malloc(sizeof(struct link_map));
+    my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
+    my_link_map->l_name = my_elf->pathname;
+    my_link_map->l_ld = my_elf->dyn;
+    my_link_map->l_prev = NULL;
+    my_link_map->l_next = NULL;
+
+    return my_link_map;
+}
+
+static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
+{
+    struct link_map *my_link_map = malloc(sizeof(struct link_map));
+    char *my_elf_str = (void *) my_elf->ehdr;
+    char *ldso_filename = (char *)
+        &my_elf_str[get_section(my_elf, ".interp")->sh_offset];
+    struct ELF *my_ldso = elf_loader(ldso_filename, NULL);
+    my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
+    my_link_map->l_name = ldso_filename;
+    my_link_map->l_ld = my_ldso->dyn;
+    my_link_map->l_prev = prev;
+    my_link_map->l_next = NULL;
+
+    return my_link_map;
+}
+
+static struct link_map *load_vdso(struct Context *my_context, struct link_map *prev)
+{
+    struct link_map *my_link_map = malloc(sizeof(struct link_map));
+    void *vdso_addr = (void *) get_auxv_entry(my_context->auxv, AT_SYSINFO_EHDR)->a_un.a_val;
+
+    struct ELF *my_vdso = elf_loader(NULL, vdso_addr);
+
+    char *name = malloc(sizeof(char) * 64);
+    switch (my_vdso->ehdr->e_machine) {
+        case EM_PPC:
+        case EM_S390:
+            name = "linux-vdso32.so.1";
+            break;
+        case EM_PPC64:
+            name = "linux-vdso64.so.1";
+            break;
+        case EM_SH:
+        case EM_IA_64:
+            name = "linux-gate.so.1";
+            break;
+        case EM_X86_64:
+            name = "linux-vdso.so.1";
+            break;
+        default:
+            name = "Unknown Arch: vdso path not found.";
+    }
+
+    my_link_map->l_addr = (ElfW(Addr)) my_vdso->ehdr;
+    my_link_map->l_name = name;
+    my_link_map->l_ld = my_vdso->dyn;
+    my_link_map->l_prev = prev;
+    my_link_map->l_next = NULL;
+
+    return my_link_map;
+}
+
+
+struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
+    struct path_list *library_path)
+{
+    struct link_map *my_link_map = load_binary(my_elf);
+    struct link_map *ret_link_map = my_link_map;
+
+    my_link_map->l_next = load_ldso(my_elf, my_link_map);
+    my_link_map = my_link_map->l_next;
+
+    my_link_map->l_next = load_vdso(my_context, my_link_map);
+    my_link_map = my_link_map->l_next;
+
+    load_libraries(my_elf, library_path, my_link_map);
+    if (my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
+        display_ldd(ret_link_map);
     return ret_link_map;
 }

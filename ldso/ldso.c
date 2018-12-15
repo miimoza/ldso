@@ -55,7 +55,7 @@ void ldso_main(u64 *stack)
 	struct Context *my_context = malloc(sizeof(struct Context));
 	my_context->env_var_display = 0;
 	my_context->auxv = find_auxv(my_context, envp);
-	my_context->bin = elf_loader(argv[0]);
+	my_context->bin = elf_loader(argv[0], NULL);
 
 	if (my_context->env_var_display & VAR_LD_SHOW_AUXV)
 		display_auxv(my_context->auxv);
