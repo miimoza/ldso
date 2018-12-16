@@ -244,7 +244,26 @@ void display_dynamic_section(struct ELF *my_elf)
         }
 
         sprintf(line + strlen(line), "(%s)%*.s", type, 18 - (int) strlen(type), " ");
-        sprintf(line + strlen(line), " 0x%lx", my_dyn->d_un.d_val);
+
+        switch (my_dyn->d_tag) {
+            case DT_NEEDED:
+                sprintf(line + strlen(line), " Shared library: [%s]", (char *) my_elf->ehdr +
+                    get_section(my_elf, ".dynstr")->sh_offset + my_dyn->d_un.d_val);
+                break;
+            case DT_INIT_ARRAYSZ:
+            case DT_FINI_ARRAYSZ:
+            case DT_STRSZ:
+            case DT_PLTRELSZ:
+            case DT_RELASZ:
+            case DT_RELAENT:
+                sprintf(line + strlen(line), " %ld (bytes)",
+                    my_dyn->d_un.d_val);
+                break;
+
+            default:
+                sprintf(line + strlen(line), " 0x%lx", my_dyn->d_un.d_val);
+        }
+
 
         printf("%s\n", line);
         free(line);

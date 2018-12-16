@@ -97,7 +97,8 @@ void display_symtabs(struct ELF *my_elf)
         sprintf(line + strlen(line), "%s%*.s", type, 10 - (int) strlen(type), " ");
 
         sprintf(line + strlen(line), " %x", my_dynsym->st_shndx);
-
+        sprintf(line + strlen(line), " %s", (char *) my_elf->ehdr
+            + get_section(my_elf, ".dynstr")->sh_offset + my_dynsym->st_name);
 
         printf("%s\n", line);
         free(line);
@@ -200,6 +201,9 @@ void display_symtabs(struct ELF *my_elf)
                 sprintf(line + strlen(line), "%3d", my_symtab->st_shndx);
                 break;
         }
+
+        sprintf(line + strlen(line), " %s", (char *) my_elf->ehdr
+            + get_section(my_elf, ".strtab")->sh_offset + my_symtab->st_name);
 
         printf("%s\n", line);
         free(line);

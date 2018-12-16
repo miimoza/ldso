@@ -23,6 +23,7 @@ LDSO_OBJS = \
 		ldso/ELF_utils.o \
 		ldso/build_link_map.o \
 		ldso/ELF_loader.o \
+		ldso/relocations.o \
 	    $(LIBC_STDIO_OBJS) \
 	    $(LIBC_STRING_OBJS) \
 	    $(LIBC_UNISTD_OBJS) \
