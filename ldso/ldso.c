@@ -63,7 +63,7 @@ void ldso_main(u64 *stack)
 	my_context->link_map = build_link_map(my_context, my_context->bin,
 		my_context->library_path_list);
 
-	test(my_context->bin);
+	apply_relocations(my_context);
 
 
 	u64 entry = get_auxv_entry(my_context->auxv, AT_ENTRY)->a_un.a_val;

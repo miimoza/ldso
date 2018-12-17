@@ -54,6 +54,18 @@ char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section)
     return (char *) my_elf_str + sh_strtab->sh_offset + section->sh_name;
 }
 
+/* Return the first sub section called <name> in .dynamic section,
+if nothing is found, return the last section */
+ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag)
+{
+    ElfW(Dyn) *my_dyn = my_elf->dyn;
+
+    while(!(my_dyn->d_tag & DT_NULL) && !(my_dyn->d_tag & tag))
+        my_dyn++;
+
+    return my_dyn;
+}
+
 // Return the first section called <name>, if nothing is found, return the last section
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name)
 {

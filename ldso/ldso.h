@@ -21,6 +21,7 @@ struct Context
     struct path_list *library_path_list;
     struct ELF *bin;
     struct link_map *link_map;
+    struct link_map *library_link_map;
 };
 
 struct ELF
@@ -43,7 +44,8 @@ struct ELF
 struct ELF *elf_loader(char *pathname, void *addr);
 struct link_map *build_link_map(struct Context *my_context,
     struct ELF *my_elf, struct path_list *library_path);
-void test(struct ELF *my_elf);
+void apply_relocations(struct Context *my_context);
+
 
 // DISPLAY
 void display_auxv(ElfW(auxv_t) *auxv);
@@ -61,5 +63,6 @@ struct path_list *create_path_node(char *pathname, int len);
 // UTILS
 int get_dyn_num(ElfW(Dyn) *my_dyn);
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section);
+ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag);
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name);
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type);

@@ -189,6 +189,7 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
     my_link_map->l_next = load_vdso(my_context, my_link_map);
     my_link_map = my_link_map->l_next;
 
+    my_context->library_link_map = my_link_map;
     load_libraries(my_elf, library_path, my_link_map);
     if (my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
         display_ldd(ret_link_map);
