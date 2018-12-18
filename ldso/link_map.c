@@ -12,7 +12,8 @@ static void display_ldd(struct link_map *my_link_map)
 {
     while (my_link_map)
     {
-        printf("	%s => %s (0x%016lx)\n", get_name_from_path(my_link_map->l_name),
+        printf("	%s => %s (0x%016lx)\n",
+            get_name_from_path(my_link_map->l_name),
             my_link_map->l_name, my_link_map->l_addr);
         my_link_map = my_link_map->l_next;
     }
@@ -29,7 +30,8 @@ static struct link_map *last_link_map(struct link_map *my_link_map)
 found, else return the NULL */
 static char *find_in_dir(char *filename, char *directory)
 {
-    char *path = malloc(sizeof(char) * strlen(filename) + strlen(directory) + 1);
+    char *path = malloc(sizeof(char) * strlen(filename)
+        + strlen(directory) + 1);
     memcpy(path, directory, strlen(directory));
     memcpy(path + strlen(directory), "/", 1);
     memcpy(path + strlen(directory) + 1, filename, strlen(filename));
@@ -49,7 +51,8 @@ static struct link_map *rec_load_library(char *lib_filename,
 
     char *path = NULL;
     struct path_list *tmp = library_path;
-    while (library_path && !(path = find_in_dir(lib_filename, library_path->pathname)))
+    while (library_path &&
+        !(path = find_in_dir(lib_filename, library_path->pathname)))
         library_path = library_path->next;
     library_path = tmp;
 
@@ -105,7 +108,7 @@ static void load_libraries(struct ELF *my_elf,
             char *lib_filename = my_elf_str + my_elf->shdr_dynstr->sh_offset
                 + my_dyn_section->d_un.d_val;
             my_link_map->l_next = rec_load_library(lib_filename,
-                 library_path, my_link_map);
+                library_path, my_link_map);
             my_link_map = last_link_map(my_link_map);
         }
         my_dyn_section++;
@@ -130,25 +133,31 @@ static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
     char *my_elf_str = (void *) my_elf->ehdr;
     char *ldso_filename = (char *)
         &my_elf_str[get_section(my_elf, ".interp")->sh_offset];
-    struct ELF *my_ldso = elf_loader(ldso_filename, NULL);
+
+    struct ELF *my_ldso = dso_loader(ldso_filename, my_link_map);
+
     my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
-    my_link_map->l_name = ldso_filename;
     my_link_map->l_ld = my_ldso->dyn;
+
+    my_link_map->l_name = ldso_filename;
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
 
     return my_link_map;
 }
 
-static struct link_map *load_vdso(struct Context *my_context, struct link_map *prev)
+static struct link_map *load_vdso(struct Context *my_context,
+    struct link_map *prev)
 {
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
-    void *vdso_addr = (void *) get_auxv_entry(my_context->auxv, AT_SYSINFO_EHDR)->a_un.a_val;
+    void *vdso_addr =
+        (void *) get_auxv_entry(my_context->auxv, AT_SYSINFO_EHDR)->a_un.a_val;
 
     struct ELF *my_vdso = elf_loader(NULL, vdso_addr);
 
     char *name = malloc(sizeof(char) * 64);
-    switch (my_vdso->ehdr->e_machine) {
+    switch (my_vdso->ehdr->e_machine)
+    {
         case EM_PPC:
         case EM_S390:
             name = "linux-vdso32.so.1";

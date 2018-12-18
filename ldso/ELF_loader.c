@@ -9,6 +9,7 @@
 #include "unistd.h"
 #include "string.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 struct ELF *elf_loader(char *pathname, void *addr)
 {
@@ -34,8 +35,10 @@ struct ELF *elf_loader(char *pathname, void *addr)
 	}
 
 
-	char *ehdr_str = (void *) my_elf->ehdr;
-	my_elf->shdr = (void *) ehdr_str + my_elf->ehdr->e_shoff;
+	char *my_elf_str = (void *) my_elf->ehdr;
+	my_elf->shdr = (void *) my_elf_str + my_elf->ehdr->e_shoff;
+
+	my_elf->phdr = (void *) my_elf_str + my_elf->ehdr->e_phoff;
 
     ElfW(Shdr) *section = my_elf->shdr;
 	unsigned i = 0;
@@ -43,12 +46,12 @@ struct ELF *elf_loader(char *pathname, void *addr)
     {
         if (section->sh_type == SHT_DYNAMIC)
         {
-            my_elf->dyn = (void *) ehdr_str + section->sh_offset;
+            my_elf->dyn = (void *) my_elf_str + section->sh_offset;
             my_elf->shdr_dyn = section;
         }
 		if (section->sh_type == SHT_DYNSYM)
         {
-            my_elf->dynsym = (void *) ehdr_str + section->sh_offset;
+            my_elf->dynsym = (void *) my_elf_str + section->sh_offset;
             my_elf->shdr_dynsym = section;
         }
 
@@ -57,7 +60,44 @@ struct ELF *elf_loader(char *pathname, void *addr)
         i++;
     }
 
-	my_elf->dynstr = (void *) ehdr_str + get_section(my_elf, ".dynstr")->sh_offset;
+	my_elf->dynstr = (void *) my_elf_str +
+		get_section(my_elf, ".dynstr")->sh_offset;
 	my_elf->shdr_dynstr = get_section(my_elf, ".dynstr");
 	return my_elf;
+}
+
+static void set_perm(void *address, size_t len, int flags)
+{
+	int prot = PROT_NONE;
+	if (flags & PF_R)
+		prot += PROT_READ;
+	if (flags & PF_W)
+		prot += PROT_WRITE;
+	if (flags & PF_X)
+		prot += PROT_EXEC;
+
+	printf("mprotect:%d\n", mprotect(address, len, prot));
+}
+
+ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map)
+{
+	struct ELF *my_elf = elf_loader(pathname, NULL);
+
+	printf("name:%s\n", my_elf->pathname);
+	ElfW(Phdr) *my_phdr = my_elf->phdr;
+
+    for (int i = 0; i < my_elf->ehdr->e_phnum; i++)
+    {
+        if (my_phdr->p_type == PT_LOAD)
+		{
+			set_perm((void *) my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
+			printf("LOAD %lx %lx %d\n", my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
+		}
+
+		char *data_str = (void *) my_phdr;
+		my_phdr = (void *) &data_str[my_elf->ehdr->e_phentsize];
+	}
+
+
+	return (void *) my_elf->ehdr;
 }

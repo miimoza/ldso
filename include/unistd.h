@@ -11,6 +11,7 @@ i64 write(int fd, const void *buf, size_t len);
 struct iovec;
 
 i64 writev(int fd, const struct iovec *iov, int iovcnt);
+int mprotect(void *addr, size_t len, int prot);
 
 int open(const char *file, int flags, ...);
 int close(int fd);

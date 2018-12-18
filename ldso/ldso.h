@@ -44,15 +44,21 @@ struct ELF
 };
 
 // MAIN FUNCTIONS
-struct ELF *elf_loader(char *pathname, void *addr);
+
 struct link_map *build_link_map(struct Context *my_context,
     struct ELF *my_elf, struct path_list *library_path);
 void apply_relocations(struct Context *my_context);
 
 
+// LOADER AND MAPPER
+ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map);
+struct ELF *elf_loader(char *pathname, void *addr);
+
 // DISPLAY
 void display_auxv(ElfW(auxv_t) *auxv);
 
+// FREE
+void free_context(struct Context *my_context);
 
 // HELPER
 char *get_name_from_path(char *path);

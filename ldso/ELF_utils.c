@@ -2,6 +2,44 @@
 #include "string.h"
 #include "stdlib.h"
 
+
+static void free_path_list(struct path_list *my_path_list)
+{
+    while (my_path_list)
+    {
+        free(my_path_list->pathname);
+        struct path_list *tmp = my_path_list->next;
+        free(my_path_list);
+        my_path_list = tmp;
+    }
+}
+
+static void free_elf(struct ELF *my_elf)
+{
+    free(my_elf->pathname);
+    free(my_elf);
+}
+
+static void free_link_map(struct link_map *my_link_map)
+{
+    while (my_link_map)
+    {
+        printf("oqsssssssssdjiqs\n");
+        free(my_link_map->l_name);
+        struct link_map *tmp = my_link_map->l_next;
+        free(my_link_map);
+        my_link_map = tmp;
+    }
+}
+
+void free_context(struct Context *my_context)
+{
+    free_path_list(my_context->library_path_list);
+    free_elf(my_context->bin);
+    free_link_map(my_context->link_map);
+    free(my_context);
+}
+
 struct path_list *create_path_node(char *pathname, int len)
 {
     struct path_list *my_path_list = malloc(sizeof(struct path_list));
@@ -66,7 +104,8 @@ ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag)
     return my_dyn;
 }
 
-// Return the first section called <name>, if nothing is found, return the last section
+/* Return the first section called <name>, if nothing is found,
+return the last section */
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name)
 {
     ElfW(Shdr) *section = my_elf->shdr;

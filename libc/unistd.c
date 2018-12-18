@@ -22,6 +22,11 @@ i64 writev(int fd, const struct iovec *iov, int iovcnt)
 	return syscall3(__NR_writev, fd, (u64)iov, iovcnt);
 }
 
+int mprotect(void *addr, size_t len, int prot)
+{
+	return syscall3(__NR_mprotect, (u64)addr, (u64)len, (u64)prot);
+}
+
 int open(const char *file, int flags, ...)
 {
 	register int mode asm("%rdx");
