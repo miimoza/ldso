@@ -1,3 +1,6 @@
+#ifndef LDSO_H
+#define LDSO_H
+
 #include <elf.h>
 #include <link.h>
 #include "types.h"
@@ -66,3 +69,5 @@ char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section);
 ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag);
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name);
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type);
+
+#endif /* LDSO_H */

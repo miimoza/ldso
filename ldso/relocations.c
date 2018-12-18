@@ -42,7 +42,6 @@ static ElfW(Addr) find_sym_address(struct link_map *my_link_map, char *sym_name)
 
 void apply_relocations(struct Context *my_context)
 {
-    printf("got relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
 
     //printf("rel:%lx\n", get_dyn_entry(my_elf->dyn, DT_REL)->d_un.d_val);
     //printf("rela:%lx\n", get_dyn_entry(my_elf->dyn, DT_RELA)->d_un.d_val);
@@ -68,14 +67,15 @@ void apply_relocations(struct Context *my_context)
 		}
 	}
 
+	printf("got relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
 
 
-	/*
+
 	ElfW(Dyn) *plt_relocations = (ElfW(Dyn) *) get_dyn_entry(my_elf->dyn, DT_JMPREL)->d_un.d_val;
 
 	for (int i = 0; i < 40; i++)
 		printf("ht%d:%lx\n",i, plt_relocations[i]);
-		*/
+
 
 
     printf("hey\n");

@@ -48,6 +48,8 @@ static inline void jmp_to_usercode(u64 entry, u64 stack)
 
 void ldso_main(u64 *stack)
 {
+    //asm volatile("int3");
+
 	int argc = *stack;
 	char **argv = (void *)&stack[1];
 	char **envp = argv + argc + 1;
