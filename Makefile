@@ -21,7 +21,7 @@ LDSO_OBJS = \
 		ldso/display_auxv.o \
 		ldso/helper.o \
 		ldso/ELF_utils.o \
-		ldso/build_link_map.o \
+		ldso/link_map.o \
 		ldso/ELF_loader.o \
 		ldso/relocations.o \
 	    $(LIBC_STDIO_OBJS) \

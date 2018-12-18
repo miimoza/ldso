@@ -16,7 +16,6 @@ static void free_path_list(struct path_list *my_path_list)
 
 static void free_elf(struct ELF *my_elf)
 {
-    free(my_elf->pathname);
     free(my_elf);
 }
 
@@ -24,8 +23,6 @@ static void free_link_map(struct link_map *my_link_map)
 {
     while (my_link_map)
     {
-        printf("oqsssssssssdjiqs\n");
-        free(my_link_map->l_name);
         struct link_map *tmp = my_link_map->l_next;
         free(my_link_map);
         my_link_map = tmp;
