@@ -131,14 +131,14 @@ static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
 {
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
     char *my_elf_str = (void *) my_elf->ehdr;
-    char *ldso_filename = (char *)
-        &my_elf_str[get_section(my_elf, ".interp")->sh_offset];
+    printf("1:%lx\n", my_elf->ehdr->e_shoff);
+    printf("%lx\n", get_section(my_elf, ".interp")->sh_offset);
+    char *ldso_filename = (char *) my_elf_str
+        + get_section(my_elf, ".interp")->sh_offset;
 
-    struct ELF *my_ldso = dso_loader(ldso_filename, my_link_map);
+    printf("test :%s\n", ldso_filename);
 
-    my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
-    my_link_map->l_ld = my_ldso->dyn;
-
+    my_link_map->l_addr  = dso_loader(ldso_filename, my_link_map);
     my_link_map->l_name = ldso_filename;
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
@@ -192,6 +192,7 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
     struct link_map *my_link_map = load_binary(my_elf);
     struct link_map *ret_link_map = my_link_map;
 
+        printf("1:%lx\n", my_elf->ehdr->e_shoff);
     my_link_map->l_next = load_ldso(my_elf, my_link_map);
     my_link_map = my_link_map->l_next;
 

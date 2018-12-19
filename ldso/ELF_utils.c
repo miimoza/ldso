@@ -81,7 +81,7 @@ int get_dyn_num(ElfW(Dyn) *my_dyn_section)
     return nb_elt_dyn;
 }
 
-// Return the name of the section from the address of the section header.
+/* Return the name of the section from the address of the section header. */
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section)
 {
     char *my_elf_str = (char *) my_elf->ehdr;

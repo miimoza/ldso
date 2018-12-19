@@ -26,7 +26,8 @@ struct ELF *elf_loader(char *pathname, void *addr)
 		memcpy(my_elf->pathname, pathname, strlen(pathname));
 
 		my_elf->ehdr = mmap(0, stat_buffer.st_size,
-	        PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+	        PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE, fd, 0);
+		printf("test%p\n", my_elf->ehdr);
 		close(fd);
 	}
 	else // ALREADY LOADED IN THE MEMORY
@@ -76,7 +77,8 @@ static void set_perm(void *address, size_t len, int flags)
 	if (flags & PF_X)
 		prot += PROT_EXEC;
 
-	printf("mprotect:%d\n", mprotect(address, len, prot));
+	printf("mmap fix:%d\n", mmap(address, len,
+		prot, MAP_FIXED, -1, 0));
 }
 
 ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map)
@@ -98,6 +100,8 @@ ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map)
 		my_phdr = (void *) &data_str[my_elf->ehdr->e_phentsize];
 	}
 
+	my_link_map->l_ld = my_elf->dyn;
 
-	return (void *) my_elf->ehdr;
+
+	return (ElfW(Addr)) my_elf->ehdr;
 }

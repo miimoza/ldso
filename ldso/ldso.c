@@ -48,8 +48,6 @@ static inline void jmp_to_usercode(u64 entry, u64 stack)
 
 void ldso_main(u64 *stack)
 {
-    //asm volatile("int3");
-
 	int argc = *stack;
 	char **argv = (void *)&stack[1];
 	char **envp = argv + argc + 1;
@@ -65,7 +63,7 @@ void ldso_main(u64 *stack)
 	my_context->link_map = build_link_map(my_context, my_context->bin,
 		my_context->library_path_list);
 
-	//apply_relocations(my_context);
+	apply_relocations(my_context);
 
 
 	u64 entry = get_auxv_entry(my_context->auxv, AT_ENTRY)->a_un.a_val;
