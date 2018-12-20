@@ -88,15 +88,18 @@ void apply_relocations(struct Context *my_context)
 
 		printf("[%s]\n         target addr:%lx\n", symbol, target_address);
 
-		printf("siceskeujpense:%lx\n", (void *) *target_address);
+		printf("         inside target:%lx\n", (void *) *target_address);
 
 		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
 		printf("	 address found for (%s) : %lx\n", symbol, address);
 
-		*target_address = address;
-		printf("	 new target addr:%lx\n\n", target_address);
 
-		printf("siceskeujpense:%lx\n", (void *) *target_address);
+        // LE MAIN BAIL
+		*target_address =  (char *) my_elf->ehdr + address;
+
+
+		printf("	 new target addr:%lx\n", target_address);
+		printf("         inside target after:%lx\n\n", (void *) *target_address);
 
 		reloc_table++;
 	}
