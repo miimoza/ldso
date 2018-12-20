@@ -26,7 +26,7 @@ struct ELF *elf_loader(char *pathname, void *addr)
 		memcpy(my_elf->pathname, pathname, strlen(pathname));
 
 		my_elf->ehdr = mmap(0, stat_buffer.st_size,
-	        PROT_READ | PROT_WRITE | PROT_EXEC, /*MAP_ANONYMOUS |*/ MAP_PRIVATE, fd, 0);
+	        PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, fd, 0);
 		printf("test%p\n", my_elf->ehdr);
 		close(fd);
 	}
@@ -40,8 +40,8 @@ struct ELF *elf_loader(char *pathname, void *addr)
 	my_elf->shdr = (void *) my_elf_str + my_elf->ehdr->e_shoff;
 
 	my_elf->phdr = (void *) my_elf_str + my_elf->ehdr->e_phoff;
-
-    ElfW(Shdr) *section = my_elf->shdr;
+/*MAP_ANONYMOUS |*/ /*MAP_ANONYMOUS |*/
+    ElfW(Shdr) *section = my_elf->shdr;/*MAP_ANONYMOUS |*/
 	unsigned i = 0;
     while(i < my_elf->ehdr->e_shnum)
     {

@@ -41,6 +41,30 @@ static ElfW(Addr) find_sym_address(struct link_map *my_link_map, char *sym_name)
 	return address;
 }
 
+
+static char *get_symtab_val(struct ELF *my_elf, int index)
+{
+	printf("index:%d\n", index);
+
+
+	char *symbol =  (char *) my_elf->ehdr +
+		get_section(my_elf, ".strtab")->sh_offset + index;
+
+	return symbol;
+}
+
+static char *get_sym(struct ELF *my_elf, ElfW(Rela) *reloc_table)
+{
+	switch(ELF64_R_TYPE(reloc_table->r_info))
+	{
+		case R_386_JMP_SLOT:
+			return get_symtab_val(my_elf, ELF64_R_SYM(reloc_table->r_info));
+			break;
+		default:
+			return get_symtab_val(my_elf, ELF64_R_SYM(reloc_table->r_info));
+	}
+}
+
 void apply_relocations(struct Context *my_context)
 {
 
@@ -64,7 +88,7 @@ void apply_relocations(struct Context *my_context)
 				get_section(my_elf, ".dynstr")->sh_offset + my_dynsym->st_name;
 
 			ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
-			
+
 			printf("address found for %s : %lx\n", symbol, address);
 		}
 	}
@@ -73,10 +97,22 @@ void apply_relocations(struct Context *my_context)
 
 	ElfW(Rela) *reloc_table = (ElfW(Rela) *) get_dyn_entry(my_elf->dyn, DT_JMPREL)->d_un.d_val;
 
-	for (int i = 0; i < 40; i++)
+	size_t size_rel = (size_t) get_dyn_entry(my_elf->dyn, DT_PLTRELSZ)->d_un.d_val;
+	size_t nb_elt = size_rel / sizeof(ElfW(Rela));
+	printf("nb:%d\n", size_rel);
+	printf("nb:%d\n", nb_elt);
+
+
+	for (size_t i = 0; i < nb_elt; i++)
 	{
-		printf("i:%d offset:%lx",i, reloc_table->r_offset);
-		printf(" info:%lx addend:%lx\n", reloc_table->r_offset, reloc_table->r_addend);
+		printf("i:%d info:%p",i, reloc_table->r_info);
+		printf(" offset:%lx addend:%lx\n", reloc_table->r_offset, reloc_table->r_addend);
+
+		char *symbol = (char *) get_sym(my_elf, reloc_table);
+
+		printf("target addr:%lx\n", reloc_table->r_offset);
+		printf("sym:%s\n", symbol);
+
 		reloc_table++;
 	}
 
