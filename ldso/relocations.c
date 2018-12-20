@@ -20,10 +20,11 @@ static ElfW(Addr) get_sym_address(struct ELF *my_elf, char *sym_name)
 	{
 		char *symbol =  (char *) my_elf->ehdr +
 			get_section(my_elf, ".dynstr")->sh_offset + my_dynsym->st_name;
+		printf("		symbol:%s addr:%lx\n", symbol, my_dynsym->st_value);
 		if (my_dynsym->st_value && my_str_cmp(sym_name, symbol))
-			return my_dynsym->st_value;
-	}
+			return (ElfW(Addr)) (char *) my_elf->ehdr + my_dynsym->st_value;
 
+	}
 	return 0;
 }
 
@@ -31,10 +32,12 @@ static ElfW(Addr) find_sym_address(struct link_map *my_link_map, char *sym_name)
 {
 	ElfW(Addr) address;
 	struct ELF *my_lib = elf_loader(NULL, (void *) my_link_map->l_addr);
+	printf("	 lib:<%s>\n", my_link_map->l_name);
 	while (my_link_map && !(address = get_sym_address(my_lib, sym_name)))
 	{
-		my_lib = elf_loader(NULL, (void *) my_link_map->l_addr);
 		my_link_map = my_link_map->l_next;
+		my_lib = elf_loader(NULL, (void *) my_link_map->l_addr);
+		printf("	 lib:<%s>\n", my_link_map->l_name);
 	}
 
 	return address;
@@ -69,7 +72,7 @@ void apply_relocations(struct Context *my_context)
 {
 	struct ELF *my_elf = my_context->bin;
 
-	printf("\n>>>> RELOCATIONS <<<<\n\ngot relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
+	printf("\n>>>> RELOCATIONS <<<<\n\n");
 
 	ElfW(Rela) *reloc_table = (ElfW(Rela) *) get_dyn_entry(my_elf->dyn, DT_JMPREL)->d_un.d_val;
 
@@ -82,24 +85,17 @@ void apply_relocations(struct Context *my_context)
 	{
 		char *symbol = (char *) get_sym(my_elf, reloc_table);
 		char *target_address = (void *) reloc_table->r_offset;
-
 		printf("[%s]\n         target addr:%016lx\n", symbol, target_address);
 		printf("         inside target:%016lx\n", (char *) *target_address);
 
 		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
 
-		printf("	 address found for (%s) : %016lx\n        base pointer elf: %016lx\n",
+		printf("	 address found for (%s) : %016lx\n         base pointer elf: %016lx\n",
 			symbol, address, my_elf->ehdr);
 
-		ElfW(Addr) virt_addr = (ElfW(Addr)) (char *) my_elf->ehdr + address;
+		*target_address = address;
 
-		printf("         the new address: %016lx\n", virt_addr);
-
-		// LE MAIN BAIL
-		//*target_address = virt_addr;
-		memcpy((void *) target_address, (void *) virt_addr, sizeof(ElfW(Addr)));
 		printf("         inside target after:%016lx\n\n", (char *) *target_address);
-
 		reloc_table++;
 	}
 }

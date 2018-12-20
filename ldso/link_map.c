@@ -135,7 +135,10 @@ static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
     char *ldso_filename = (char *) my_elf_str
         + get_section(my_elf, ".interp")->sh_offset;
 
-    my_link_map->l_addr  = dso_loader(ldso_filename, my_link_map);
+    //my_link_map->l_addr  = dso_loader(ldso_filename, my_link_map);
+    struct ELF *my_ldso = elf_loader(ldso_filename, NULL);
+    my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
+    my_link_map->l_ld = my_ldso->dyn;
     my_link_map->l_name = ldso_filename;
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
@@ -152,7 +155,7 @@ static struct link_map *load_vdso(struct Context *my_context,
 
     struct ELF *my_vdso = elf_loader(NULL, vdso_addr);
 
-    char *name = malloc(sizeof(char) * 64);
+    char *name;
     switch (my_vdso->ehdr->e_machine)
     {
         case EM_PPC:
@@ -196,6 +199,7 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
     my_link_map = my_link_map->l_next;
 
     my_context->library_link_map = my_link_map;
+
     load_libraries(my_elf, library_path, my_link_map);
 
     //if (my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
