@@ -12,7 +12,6 @@ static ElfW(Dyn) *get_dyn_entry(ElfW(Dyn) *my_dyn, u32 type)
 
 static ElfW(Addr) get_sym_address(struct ELF *my_elf, char *sym_name)
 {
-	printf("symname:%s\n", sym_name);
 	int nb_elt_dynsym = my_elf->shdr_dynsym->sh_size / my_elf->shdr_dynsym->sh_entsize;
 
 	ElfW(Sym) *my_dynsym = my_elf->dynsym;
@@ -29,7 +28,6 @@ static ElfW(Addr) get_sym_address(struct ELF *my_elf, char *sym_name)
 
 static ElfW(Addr) find_sym_address(struct link_map *my_link_map, char *sym_name)
 {
-	printf("symname to find:%s\n", sym_name);
 	ElfW(Addr) address;
 	struct ELF *my_lib = elf_loader(NULL, (void *) my_link_map->l_addr);
 	while (my_link_map && !(address = get_sym_address(my_lib, sym_name)))
@@ -44,11 +42,12 @@ static ElfW(Addr) find_sym_address(struct link_map *my_link_map, char *sym_name)
 
 static char *get_symtab_val(struct ELF *my_elf, int index)
 {
-	printf("index:%d\n", index);
+	ElfW(Sym) *my_dynsym = my_elf->dynsym;
+	for (int i = 0; i < index; i++)
+		my_dynsym++;
 
-
-	char *symbol =  (char *) my_elf->ehdr +
-		get_section(my_elf, ".strtab")->sh_offset + index;
+	char *symbol = (char *) my_elf->ehdr
+		+ get_section(my_elf, ".dynstr")->sh_offset + my_dynsym->st_name;
 
 	return symbol;
 }
@@ -67,31 +66,7 @@ static char *get_sym(struct ELF *my_elf, ElfW(Rela) *reloc_table)
 
 void apply_relocations(struct Context *my_context)
 {
-
-    //printf("rel:%lx\n", get_dyn_entry(my_elf->dyn, DT_REL)->d_un.d_val);
-    //printf("rela:%lx\n", get_dyn_entry(my_elf->dyn, DT_RELA)->d_un.d_val);
-    //printf("hash:%lx\n", get_dyn_entry(my_elf->dyn, DT_HASH)->d_un.d_val);
-
-
 	struct ELF *my_elf = my_context->bin;
-
-
-	int nb_elt_dynsym = my_elf->shdr_dynsym->sh_size / my_elf->shdr_dynsym->sh_entsize;
-
-	ElfW(Sym) *my_dynsym = my_elf->dynsym;
-	for (int i = 0; i < nb_elt_dynsym; i++, my_dynsym++)
-	{
-		if (!my_dynsym->st_value)
-		{
-
-			char *symbol =  (char *) my_elf->ehdr +
-				get_section(my_elf, ".dynstr")->sh_offset + my_dynsym->st_name;
-
-			ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
-
-			printf("address found for %s : %lx\n", symbol, address);
-		}
-	}
 
 	printf("got relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
 
@@ -105,13 +80,20 @@ void apply_relocations(struct Context *my_context)
 
 	for (size_t i = 0; i < nb_elt; i++)
 	{
-		printf("i:%d info:%p",i, reloc_table->r_info);
-		printf(" offset:%lx addend:%lx\n", reloc_table->r_offset, reloc_table->r_addend);
-
 		char *symbol = (char *) get_sym(my_elf, reloc_table);
+		char *target_address = (void *) reloc_table->r_offset;
 
-		printf("target addr:%lx\n", reloc_table->r_offset);
-		printf("sym:%s\n", symbol);
+		printf("[%s]\n         target addr:%lx\n", symbol, target_address);
+
+		printf("siceskeujpense:%lx\n", (void *) *target_address);
+
+		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
+		printf("	 address found for (%s) : %lx\n", symbol, address);
+
+		*target_address = address;
+		printf("	 new target addr:%lx\n\n", target_address);
+
+		printf("siceskeujpense:%lx\n", (void *) *target_address);
 
 		reloc_table++;
 	}
