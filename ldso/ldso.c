@@ -68,7 +68,6 @@ void ldso_main(u64 *stack)
 
 	u64 entry = get_auxv_entry(my_context->auxv, AT_ENTRY)->a_un.a_val;
 
-	printf("end1\n");
 	free_context(my_context);
 
 	printf("end2\n");

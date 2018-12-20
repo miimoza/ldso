@@ -1,6 +1,7 @@
 #include "ldso.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "string.h"
 
 static ElfW(Dyn) *get_dyn_entry(ElfW(Dyn) *my_dyn, u32 type)
 {
@@ -54,18 +55,15 @@ static char *get_symtab_val(struct ELF *my_elf, int index)
 
 static char *get_sym(struct ELF *my_elf, ElfW(Rela) *reloc_table)
 {
-	switch(ELF64_R_TYPE(reloc_table->r_info))
+	switch(ELFW(R_TYPE)(reloc_table->r_info))
 	{
 		case R_386_JMP_SLOT:
-			return get_symtab_val(my_elf, ELF64_R_SYM(reloc_table->r_info));
+			return get_symtab_val(my_elf, ELFW(R_SYM)(reloc_table->r_info));
 			break;
 		default:
-			return get_symtab_val(my_elf, ELF64_R_SYM(reloc_table->r_info));
+			return get_symtab_val(my_elf, ELFW(R_SYM)(reloc_table->r_info));
 	}
 }
-
-
-
 
 void apply_relocations(struct Context *my_context)
 {
@@ -86,23 +84,24 @@ void apply_relocations(struct Context *my_context)
 		char *symbol = (char *) get_sym(my_elf, reloc_table);
 		char *target_address = (void *) reloc_table->r_offset;
 
-		printf("[%s]\n         target addr:%lx\n", symbol, target_address);
+		printf("[%s]\n         target addr:%016lx\n", symbol, target_address);
 
-		printf("         inside target:%lx\n", (void *) *target_address);
+		printf("         inside target:%016lx\n", (char *) *target_address);
 
 		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
-		printf("	 address found for (%s) : %lx\n", symbol, address);
+		printf("	 address found for (%s) : %016lx\n        base pointer elf: %016lx\n",
+			symbol, address, my_elf->ehdr);
+
+		ElfW(Addr) virt_addr = (ElfW(Addr)) (char *) my_elf->ehdr + address;
+		printf("         the new address: %016lx\n", virt_addr);
+
+		// LE MAIN BAIL
+		//*target_address =
+		memcpy((void *) target_address, (void *) virt_addr, sizeof(ElfW(Addr)));
 
 
-        // LE MAIN BAIL
-		*target_address =  (char *) my_elf->ehdr + address;
-
-
-		printf("	 new target addr:%lx\n", target_address);
-		printf("         inside target after:%lx\n\n", (void *) *target_address);
+		printf("         inside target after:%016lx\n\n", (char *) *target_address);
 
 		reloc_table++;
 	}
-
-    printf("hey\n");
 }

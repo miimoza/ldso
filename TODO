@@ -1,1 +1,3 @@
+ - refaire mmap segment clean avec perm
  - refaire ldd a la bien avec la recursion l'adresse tout ca
+
