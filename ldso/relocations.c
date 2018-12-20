@@ -64,6 +64,9 @@ static char *get_sym(struct ELF *my_elf, ElfW(Rela) *reloc_table)
 	}
 }
 
+
+
+
 void apply_relocations(struct Context *my_context)
 {
 	struct ELF *my_elf = my_context->bin;
@@ -97,7 +100,6 @@ void apply_relocations(struct Context *my_context)
 
 		reloc_table++;
 	}
-
 
     printf("hey\n");
 }

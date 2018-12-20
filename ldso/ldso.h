@@ -1,9 +1,13 @@
 #ifndef LDSO_H
 #define LDSO_H
 
-
 #include <elf.h>
 #include <link.h>
+
+#define ELFW(type)	_ELFW (ELF, __ELF_NATIVE_CLASS, type)
+#define _ELFW(e,w,t)	_ELFW_1 (e, w, _##t)
+#define _ELFW_1(e,w,t)	e##w##t
+
 #include "types.h"
 
 
