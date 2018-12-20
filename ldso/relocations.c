@@ -69,15 +69,14 @@ void apply_relocations(struct Context *my_context)
 {
 	struct ELF *my_elf = my_context->bin;
 
-	printf("got relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
+	printf("\n>>>> RELOCATIONS <<<<\n\ngot relocation address (jmprel):%lx\n", get_dyn_entry(my_context->bin->dyn, DT_JMPREL)->d_un.d_val);
 
 	ElfW(Rela) *reloc_table = (ElfW(Rela) *) get_dyn_entry(my_elf->dyn, DT_JMPREL)->d_un.d_val;
 
 	size_t size_rel = (size_t) get_dyn_entry(my_elf->dyn, DT_PLTRELSZ)->d_un.d_val;
 	size_t nb_elt = size_rel / sizeof(ElfW(Rela));
-	printf("nb:%d\n", size_rel);
-	printf("nb:%d\n", nb_elt);
-
+	printf("total size relocation table:%d\n", size_rel);
+	printf("number elements in relocations table:%d\n", nb_elt);
 
 	for (size_t i = 0; i < nb_elt; i++)
 	{
@@ -85,21 +84,20 @@ void apply_relocations(struct Context *my_context)
 		char *target_address = (void *) reloc_table->r_offset;
 
 		printf("[%s]\n         target addr:%016lx\n", symbol, target_address);
-
 		printf("         inside target:%016lx\n", (char *) *target_address);
 
 		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
+
 		printf("	 address found for (%s) : %016lx\n        base pointer elf: %016lx\n",
 			symbol, address, my_elf->ehdr);
 
 		ElfW(Addr) virt_addr = (ElfW(Addr)) (char *) my_elf->ehdr + address;
+
 		printf("         the new address: %016lx\n", virt_addr);
 
 		// LE MAIN BAIL
-		//*target_address =
+		//*target_address = virt_addr;
 		memcpy((void *) target_address, (void *) virt_addr, sizeof(ElfW(Addr)));
-
-
 		printf("         inside target after:%016lx\n\n", (char *) *target_address);
 
 		reloc_table++;

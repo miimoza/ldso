@@ -15,7 +15,6 @@ struct ELF *elf_loader(char *pathname, void *addr)
 {
 	struct ELF *my_elf = malloc(sizeof(struct ELF));
 
-
 	if (pathname) // LOADED BY PATHNAME
 	{
 		struct stat stat_buffer;
@@ -27,7 +26,6 @@ struct ELF *elf_loader(char *pathname, void *addr)
 
 		my_elf->ehdr = mmap(0, stat_buffer.st_size,
 	        PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, fd, 0);
-		printf("test%p\n", my_elf->ehdr);
 
 		close(fd);
 	}
@@ -41,8 +39,8 @@ struct ELF *elf_loader(char *pathname, void *addr)
 	my_elf->shdr = (void *) my_elf_str + my_elf->ehdr->e_shoff;
 
 	my_elf->phdr = (void *) my_elf_str + my_elf->ehdr->e_phoff;
-/*MAP_ANONYMOUS |*/ /*MAP_ANONYMOUS |*/
-    ElfW(Shdr) *section = my_elf->shdr;/*MAP_ANONYMOUS |*/
+
+    ElfW(Shdr) *section = my_elf->shdr;
 	unsigned i = 0;
     while(i < my_elf->ehdr->e_shnum)
     {
@@ -79,22 +77,22 @@ static void set_perm(void *address, size_t len, int flags)
 		prot += PROT_EXEC;
 
 	printf("mmap fix:%d\n", mmap(address, len,
-		prot, MAP_FIXED, -1, 0));
+		prot, MAP_FIXED | MAP_ANONYMOUS, -1, 0));
 }
 
 ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map)
 {
+	printf("dso_loader: %s\n", pathname);
 	struct ELF *my_elf = elf_loader(pathname, NULL);
 
-	printf("name:%s\n", my_elf->pathname);
 	ElfW(Phdr) *my_phdr = my_elf->phdr;
 
     for (int i = 0; i < my_elf->ehdr->e_phnum; i++)
     {
         if (my_phdr->p_type == PT_LOAD)
 		{
+			printf("LOAD SEGMENT.. [vaddr:%016lx memsz:%016lx flags:%d]\n", my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
 			set_perm((void *) my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
-			printf("LOAD %lx %lx %d\n", my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
 		}
 
 		char *data_str = (void *) my_phdr;

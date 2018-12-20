@@ -131,12 +131,9 @@ static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
 {
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
     char *my_elf_str = (void *) my_elf->ehdr;
-    printf("1:%lx\n", my_elf->ehdr->e_shoff);
-    printf("%lx\n", get_section(my_elf, ".interp")->sh_offset);
+
     char *ldso_filename = (char *) my_elf_str
         + get_section(my_elf, ".interp")->sh_offset;
-
-    printf("test :%s\n", ldso_filename);
 
     my_link_map->l_addr  = dso_loader(ldso_filename, my_link_map);
     my_link_map->l_name = ldso_filename;
@@ -192,7 +189,6 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
     struct link_map *my_link_map = load_binary(my_elf);
     struct link_map *ret_link_map = my_link_map;
 
-        printf("1:%lx\n", my_elf->ehdr->e_shoff);
     my_link_map->l_next = load_ldso(my_elf, my_link_map);
     my_link_map = my_link_map->l_next;
 
@@ -201,7 +197,8 @@ struct link_map *build_link_map(struct Context *my_context, struct ELF *my_elf,
 
     my_context->library_link_map = my_link_map;
     load_libraries(my_elf, library_path, my_link_map);
-    if (my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
+
+    //if (my_context->env_var_display & VAR_LD_TRACE_LOADED_OBJECTS)
         display_ldd(ret_link_map);
     return ret_link_map;
 }
