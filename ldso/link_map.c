@@ -66,7 +66,7 @@ static struct link_map *rec_load_library(char *lib_filename,
 
     my_link_map->l_addr = (ElfW(Addr)) my_lib->ehdr;
     my_link_map->l_name = path;
-    my_link_map->l_ld = my_lib->dyn;
+    my_link_map->l_ld = dso_loader(my_lib, path);
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
 
@@ -118,7 +118,7 @@ static struct link_map *load_binary(struct ELF *my_elf)
     struct link_map *my_link_map = malloc(sizeof(struct link_map));
     my_link_map->l_addr = (ElfW(Addr)) my_elf->ehdr;
     my_link_map->l_name = my_elf->pathname;
-    my_link_map->l_ld = my_elf->dyn;
+    my_link_map->l_ld = dso_loader(my_elf, my_elf->pathname);
     my_link_map->l_prev = NULL;
     my_link_map->l_next = NULL;
 
@@ -136,7 +136,7 @@ static struct link_map *load_ldso(struct ELF *my_elf, struct link_map *prev)
     //my_link_map->l_addr  = dso_loader(ldso_filename, my_link_map);
     struct ELF *my_ldso = elf_loader(ldso_filename, NULL);
     my_link_map->l_addr = (ElfW(Addr)) my_ldso->ehdr;
-    my_link_map->l_ld = my_ldso->dyn;
+    my_link_map->l_ld = dso_loader(my_ldso, ldso_filename);
     my_link_map->l_name = ldso_filename;
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
@@ -176,7 +176,7 @@ static struct link_map *load_vdso(struct Context *my_context,
 
     my_link_map->l_addr = (ElfW(Addr)) my_vdso->ehdr;
     my_link_map->l_name = name;
-    my_link_map->l_ld = my_vdso->dyn;
+    my_link_map->l_ld = dso_loader(my_vdso, name);
     my_link_map->l_prev = prev;
     my_link_map->l_next = NULL;
 

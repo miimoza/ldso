@@ -65,11 +65,9 @@ void ldso_main(u64 *stack)
 
 	apply_relocations(my_context);
 
-
 	u64 entry = get_auxv_entry(my_context->auxv, AT_ENTRY)->a_un.a_val;
 
 	free_context(my_context);
 
-	printf("end2\n");
 	jmp_to_usercode(entry, (u64)stack);
 }
