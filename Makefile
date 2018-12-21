@@ -111,3 +111,7 @@ libc/malloc.o: CPPFLAGS += $(MALLOC_CPPFLAGS)
 
 clean:
 	$(RM) $(LDSO_OBJS) $(LIBC_OBJS) $(USELESS_OBJS) $(TEST_LIBS) $(TESTS) $(TARGETS) libc/crt0.o tests/test-standalone.o
+
+check:
+	./test-standalone foo bar; ./test-onelib barre fou; ./test-libs bouffe phare
+

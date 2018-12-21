@@ -1,16 +1,82 @@
 =============================== LDSO ================================
 
+LDSO is a dynamic linker/loader.
 
 
+usage:
+
+The program find and load in memory, all the shared libraries needed
+by the binaries giving in arguments.
+The program also prepare the program to run, and then jump into.
 
 
+---------------------- ENVIRONMENTAL VARIABLE -----------------------
 
-Features:
-    - 
+* LD_SHOW_AUXV
+        When this variable is set, the program display all the
+        information stored inside the auxliary vector.
+
+        usage: LD_SHOW_AUXV=1 (whatever the value)
 
 
-Going Further:
-    - LD_LIBRARY_PATH
+* LD_TRACE_LOADED_OBJECTS
+
+        This variable specifies the location of libraries.
+        In other words, where the dynamic linker is going to search.
+        You can specifies more than one directory with colon
+        between each directory.
+
+        usage: LD_TRACE_LOADED_OBJECTS=1 (whatever the value)
 
 
-======================================================================
+----------------------------- LINK MAP  -----------------------------
+
+First, we load all LOAD segment of the dso in the link_map, with good
+permissions, and we find all the needed libraries in a recursive way.
+
+Representation of the Link map:
+
+binary -> ld.so -> vdso -> loaded_lib_1 -> loaded_lib_2 -> ..
+
+--------------------------- RELOCATIONS -----------------------------
+
+
+Then, on each dso in the link map we apply those effects:
+
+    * Find the missing symbols in the dynamic symbol table
+
+    * Make a recursive research in all the dso to find the 
+      address of all the missing symbols.
+
+    * Write the address found at the offset given by the 
+      relocations table (correspounding to the good symbol).
+
+Conclusion:
+
+    LD_BIND_NOW: OK
+    LD_BIND_LAZY: Write some assembly code, but not implemented.
+
+--------------------------  GOING FURTHER ---------------------------
+
+* LD_LIBRARY_PATH
+
+        This variable specifies the location of libraries.
+        In other words, where the dynamic linker is going to search.
+        You can specifies more than one directory with colon
+        between each directory.
+
+        usage: LD_LIBRARY_PATH=<directory_1>:<directory_2>:...
+
+
+--------------------------- DUMMY READELF ---------------------------
+
+Dummy Readelf program displays information about ELF files.
+This is the equivalent to readelf -hlsSd <ELF_file>
+
+./dummy-readelf <ELF_file>
+
+Missing features:
+    - Not the good order in the Segment Mapping Section
+
+
+=====================================================================
