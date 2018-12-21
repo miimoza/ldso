@@ -26,8 +26,6 @@ static struct link_map *last_link_map(struct link_map *my_link_map)
     return my_link_map;
 }
 
-/* Search the filename given in the directory given, return the full path if
-found, else return the NULL */
 static char *find_in_dir(char *filename, char *directory)
 {
     char *path = malloc(sizeof(char) * strlen(filename)

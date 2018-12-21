@@ -68,11 +68,14 @@ static char *get_sym(struct ELF *my_elf, ElfW(Rela) *reloc_table)
 	}
 }
 
-void apply_relocations(struct Context *my_context)
+static void resolve_dso(struct link_map *library_link_map, struct ELF *my_elf, char *pathname)
 {
-	struct ELF *my_elf = my_context->bin;
+	printf(">>>> RELOCATIONS <<<<\n\n");
 
-	printf("\n>>>> RELOCATIONS <<<<\n\n");
+	if (!get_dyn_entry(my_elf->dyn, DT_JMPREL))
+		return;
+
+	void *my_dso = dso_loader(my_elf, pathname);
 
 	ElfW(Rela) *reloc_table = (ElfW(Rela) *) get_dyn_entry(my_elf->dyn, DT_JMPREL)->d_un.d_val;
 
@@ -84,18 +87,31 @@ void apply_relocations(struct Context *my_context)
 	for (size_t i = 0; i < nb_elt; i++)
 	{
 		char *symbol = (char *) get_sym(my_elf, reloc_table);
-		char *target_address = (void *) reloc_table->r_offset;
+		ElfW(Addr) *target_address = (ElfW(Addr) *) reloc_table->r_offset; // ADD HEADER
 		printf("[%s]\n         target addr:%016lx\n", symbol, target_address);
-		printf("         inside target:%016lx\n", (char *) *target_address);
+		printf("         inside target:%016lx\n", (ElfW(Addr)) *target_address);
 
-		ElfW(Addr) address = find_sym_address(my_context->library_link_map, symbol);
+		ElfW(Addr) address = find_sym_address(library_link_map, symbol);
 
-		printf("	 address found for (%s) : %016lx\n         base pointer elf: %016lx\n",
-			symbol, address, my_elf->ehdr);
+		printf("	 address found for (%s) : %016lx\n", symbol, address);
 
 		*target_address = address;
 
-		printf("         inside target after:%016lx\n\n", (char *) *target_address);
+		printf("         inside target after:%016lx\n\n", (ElfW(Addr)) *target_address);
 		reloc_table++;
+	}
+}
+
+void apply_relocations(struct Context *my_context)
+{
+	struct link_map *my_link_map = my_context->link_map;
+
+	struct ELF *my_dso = elf_loader(NULL, (void *) my_link_map->l_addr);
+	while (my_link_map)
+	{
+		printf("resolve dso <%s> ...\n", my_link_map->l_name);
+		resolve_dso(my_context->library_link_map, my_dso, my_link_map->l_name);
+		my_link_map = my_link_map->l_next;
+		my_dso = elf_loader(NULL, (void *) my_link_map->l_addr);
 	}
 }

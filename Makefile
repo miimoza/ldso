@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -g -Os
+CFLAGS = -Wall -Wextra -g -s
 CFLAGS += \
 	  -ffreestanding \
 	  -fno-builtin \

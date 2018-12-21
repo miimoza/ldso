@@ -66,7 +66,7 @@ struct ELF *elf_loader(char *pathname, void *addr)
 	return my_elf;
 }
 
-static void set_perm(void *address, size_t len, int flags)
+static void set_perm(void *my_dso, void *address, size_t len, int flags, int fd, size_t offset)
 {
 	int prot = PROT_NONE;
 	if (flags & PF_R)
@@ -76,31 +76,36 @@ static void set_perm(void *address, size_t len, int flags)
 	if (flags & PF_X)
 		prot += PROT_EXEC;
 
-	printf("mmap fix:%d\n", mmap(address, len,
-		prot, MAP_FIXED | MAP_ANONYMOUS, -1, 0));
+	printf("mmap fix:%d\n", mmap((char *) my_dso + (size_t) address, len,
+		prot, MAP_FIXED, fd, offset));
 }
 
-ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map)
+void *dso_loader(struct ELF *my_elf, char *pathname)
 {
 	printf("dso_loader: %s\n", pathname);
-	struct ELF *my_elf = elf_loader(pathname, NULL);
+
+	int fd = open(pathname, O_RDONLY);
+	struct stat stat_buffer;
+	stat(pathname, &stat_buffer);
+	void *my_dso = mmap(0, stat_buffer.st_size, PROT_READ, MAP_ANONYMOUS, -1, 0);
+
 
 	ElfW(Phdr) *my_phdr = my_elf->phdr;
-
     for (int i = 0; i < my_elf->ehdr->e_phnum; i++)
     {
         if (my_phdr->p_type == PT_LOAD)
 		{
-			printf("LOAD SEGMENT.. [vaddr:%016lx memsz:%016lx flags:%d]\n", my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
-			set_perm((void *) my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
+			printf("LOAD SEGMENT.. [vaddr:%016lx memsz:%016lx flags:%d]\n",
+				my_phdr->p_vaddr, my_phdr->p_memsz, my_phdr->p_flags);
+			set_perm(my_dso, (void *) my_phdr->p_vaddr, my_phdr->p_filesz,
+				my_phdr->p_flags, fd, my_phdr->p_offset);
 		}
 
 		char *data_str = (void *) my_phdr;
 		my_phdr = (void *) &data_str[my_elf->ehdr->e_phentsize];
 	}
 
-	my_link_map->l_ld = my_elf->dyn;
+	close(fd);
 
-
-	return (ElfW(Addr)) my_elf->ehdr;
+	return my_dso;
 }

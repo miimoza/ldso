@@ -61,8 +61,6 @@ static struct path_list *rec_path_list(char *lib_path_var)
     return my_path_list;
 }
 
-
-// Fill the path_list structure with the string, each path being separate by :
 struct path_list *build_library_path_list(char *lib_path_var)
 {
     int i = 0;
@@ -72,7 +70,7 @@ struct path_list *build_library_path_list(char *lib_path_var)
     return rec_path_list(lib_path_var + i + 1);
 }
 
-// Return number of elements in the dynamic table
+
 int get_dyn_num(ElfW(Dyn) *my_dyn_section)
 {
     int nb_elt_dyn = 1;
@@ -81,7 +79,7 @@ int get_dyn_num(ElfW(Dyn) *my_dyn_section)
     return nb_elt_dyn;
 }
 
-/* Return the name of the section from the address of the section header. */
+
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section)
 {
     char *my_elf_str = (char *) my_elf->ehdr;
@@ -89,8 +87,7 @@ char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section)
     return (char *) my_elf_str + sh_strtab->sh_offset + section->sh_name;
 }
 
-/* Return the first sub section called <name> in .dynamic section,
-if nothing is found, return the last section */
+
 ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag)
 {
     ElfW(Dyn) *my_dyn = my_elf->dyn;
@@ -101,8 +98,6 @@ ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag)
     return my_dyn;
 }
 
-/* Return the first section called <name>, if nothing is found,
-return the last section */
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name)
 {
     ElfW(Shdr) *section = my_elf->shdr;

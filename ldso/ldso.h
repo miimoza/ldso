@@ -57,7 +57,7 @@ void apply_relocations(struct Context *my_context);
 
 
 // LOADER AND MAPPER
-ElfW(Addr) dso_loader(char *pathname, struct link_map *my_link_map);
+void *dso_loader(struct ELF *my_elf, char *pathname);
 struct ELF *elf_loader(char *pathname, void *addr);
 
 // DISPLAY
@@ -72,13 +72,24 @@ int my_var_cmp(char *a, char *b);
 int my_str_cmp(char *a, char *b);
 
 // PATH LISTS
+// Fill the path_list structure with the string, each path being separate by :
 struct path_list *build_library_path_list(char *lib_path_var);
 struct path_list *create_path_node(char *pathname, int len);
 
 // UTILS
+
+/* Return number of elements in the dynamic table */
 int get_dyn_num(ElfW(Dyn) *my_dyn);
+
+/* Return the name of the section from the address of the section header. */
 char *get_section_name(struct ELF *my_elf, ElfW(Shdr) *section);
+
+/* Return the first sub section called <name> in .dynamic section,
+if nothing is found, return the last section */
 ElfW(Dyn) *get_dyn_section(struct ELF *my_elf , int tag);
+
+/* Return the first section called <name>, if nothing is found,
+return the last section */
 ElfW(Shdr) *get_section(struct ELF *my_elf, char *name);
 ElfW(auxv_t) *get_auxv_entry(ElfW(auxv_t) *auxv, u32 type);
 
